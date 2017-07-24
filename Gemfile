@@ -15,6 +15,9 @@ gem 'puma', '~> 3.0'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 # gem 'jbuilder', '~> 2.5'
 
+# For serializing.
+gem 'active_model_serializers'
+
 group :development, :test do
   # Use RSpec for specs
   gem 'rspec-rails', '>= 3.5.0'

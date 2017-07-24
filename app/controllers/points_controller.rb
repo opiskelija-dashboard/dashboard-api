@@ -1,18 +1,20 @@
 class PointsController < ApplicationController
   before_action :set_point, only: [:show, :update, :destroy]
 
-  # GET /api/v8/courses/214/users/current/points
-  # Temporary GET /http://secure-wave-81252.herokuapp.com/points
+  # Point specifics of all points of the current user as JSON.
   def index
+    render json: Point.all
   end
 
+  # Total point count of the current user as JSON.
   def total_points
-    url = "http://secure-wave-81252.herokuapp.com/points"
-    set_points(url)
+    set_points("http://secure-wave-81252.herokuapp.com/points")
 
-    render json: "{
-                    \"total_points\": ${Point.count} 
-                  }"
+    string_to_render = "{
+                          \"total_points\": #{Point.count}
+                        }"
+
+    render json: string_to_render
   end
 
   private

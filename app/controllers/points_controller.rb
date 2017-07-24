@@ -1,65 +1,39 @@
 class PointsController < ApplicationController
   before_action :set_point, only: [:show, :update, :destroy]
 
-  # GET /points
+  # GET /api/v8/courses/214/users/current/points
+  # Temporary GET /http://secure-wave-81252.herokuapp.com/points
   def index
-
-    test_url = "http://localhost:3000/api/v8/courses/214/users/current/points"
-    uri = URI.parse(test_url)
-    http = Net::HTTP.new(uri.host, uri.port)
-    request = Net::HTTP::Get.new(uri.request_uri)
-    response = http.request(request)
-
-    hash = JSON.parse response.body
-    hash.each do |point|
-      p = Point.new
-      p.exercise_id = point["exercise_id"]
-      p.point_id = point["awarded_point"]["id"]
-      p.course_id = point["awarded_point"]["course_id"]
-      p.user_id = point["awarded_point"]["user_id"]
-      p.submission_id = point["awarded_point"]["submission_id"]
-      p.name = point["awarded_point"]["name"]
-      p.save
-    end
-
-    render json: Point.first
-    
   end
 
-  # GET /points/1
-  def show
-    render json: @point
-  end
+  def total_points
+    url = "http://secure-wave-81252.herokuapp.com/points"
+    set_points(url)
 
-  # POST /points
-  def create
-    @point = Point.new(point_params)
-
-    if @point.save
-      render json: @point, status: :created, location: @point
-    else
-      render json: @point.errors, status: :unprocessable_entity
-    end
-  end
-
-  # PATCH/PUT /points/1
-  def update
-    if @point.update(point_params)
-      render json: @point
-    else
-      render json: @point.errors, status: :unprocessable_entity
-    end
-  end
-
-  # DELETE /points/1
-  def destroy
-    @point.destroy
+    render json: "{
+                    \"total_points\": ${Point.count} 
+                  }"
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_point
-      @point = Point.find(params[:id])
+
+    def set_points(url)
+      uri = URI.parse(url)
+      http = Net::HTTP.new(uri.host, uri.port)
+      request = Net::HTTP::Get.new(uri.request_uri)
+      response = http.request(request)
+
+      hash = JSON.parse response.body
+      hash.each do |point|
+        p = Point.new
+        p.exercise_id = point["exercise_id"]
+        p.point_id = point["awarded_point"]["id"]
+        p.course_id = point["awarded_point"]["course_id"]
+        p.user_id = point["awarded_point"]["user_id"]
+        p.submission_id = point["awarded_point"]["submission_id"]
+        p.name = point["awarded_point"]["name"]
+        p.save
+      end
     end
 
     # Only allow a trusted parameter "white list" through.

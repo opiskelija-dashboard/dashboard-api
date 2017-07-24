@@ -2,6 +2,6 @@ class Point < ApplicationRecord
   validates :point_id, uniqueness: true
 
   def total_points
-    Point.all.count
+    Point.count
   end
 end

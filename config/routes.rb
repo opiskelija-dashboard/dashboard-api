@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resources :submissions
   resources :points
 
   get '/total_points', to: 'points#total_points'

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170727111508) do
+ActiveRecord::Schema.define(version: 20170721104143) do
 
   create_table "points", force: :cascade do |t|
     t.integer  "exercise_id"

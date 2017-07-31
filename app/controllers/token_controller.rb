@@ -18,9 +18,11 @@ class TokenController < ApplicationController
       # in proper use we'd fetch the secret from a conf file or
       # environment variable instead of hardcoding it into the program
       secret = 'secret'
-      token_payload = { tmcusr: tmc_username,
+      token_payload = {
+        tmcusr: tmc_username,
         tmctok: tmc_access_token,
-        exp: expiry }
+        exp: expiry
+      }
       token_string = JWT.encode(token_payload, secret, 'HS256')
       render json: {
         data: {

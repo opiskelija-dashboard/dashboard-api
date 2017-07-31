@@ -8,6 +8,7 @@ class ApplicationController < ActionController::API
 
     if token_payload
       # because the token was signed by us, we can trust it
+      @token = token_payload
       return true
     else
       render json: { "errors" => # json:api format

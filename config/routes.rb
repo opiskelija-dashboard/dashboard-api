@@ -6,6 +6,5 @@ Rails.application.routes.draw do
   #get '/api/v8/courses/:course_id/users/current/points', to: ''
 
   post '/new-dash-session', to: 'token#newtoken'
-  #put '/settoken', to: 'sessions#set_tmc_access_token'
 
 end

@@ -28,10 +28,5 @@ module DashboardBackend
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
-
-    # does this go here or after the end of the module? -m
-#    ActionDispatch::Session::ActiveRecordStore.session_class = Session
-
   end
 end
-

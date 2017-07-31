@@ -3,7 +3,7 @@ class SubmissionsController < ApplicationController
 
   # GET /submissions
   def index
-    render json: Submission.all
+    render json: Submission.first
   end
 
   private

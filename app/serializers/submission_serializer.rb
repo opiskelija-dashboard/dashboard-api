@@ -1,3 +1,3 @@
 class SubmissionSerializer < ActiveModel::Serializer
-  attributes :submission_id, :points
+  attributes :days, :points
 end

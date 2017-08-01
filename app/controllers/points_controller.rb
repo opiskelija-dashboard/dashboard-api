@@ -1,5 +1,5 @@
 class PointsController < ApplicationController
-  before_action :set_point, only: [:show, :update, :destroy]
+  before_action :set_points
 
   # Point specifics of all points of the current user as JSON.
   def index
@@ -17,8 +17,6 @@ class PointsController < ApplicationController
 
   # Total point count of the current user as JSON.
   def total_points
-    set_points("http://secure-wave-81252.herokuapp.com/points")
-
     string_to_render = "{
                           \"total_points\": #{Point.count}
                         }"
@@ -28,7 +26,8 @@ class PointsController < ApplicationController
 
   private
 
-    def set_points(url)
+    def set_points
+      url = "http://secure-wave-81252.herokuapp.com/points"
       uri = URI.parse(url)
       http = Net::HTTP.new(uri.host, uri.port)
       request = Net::HTTP::Get.new(uri.request_uri)

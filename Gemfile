@@ -22,8 +22,9 @@ end
 
 # Use Puma as the app server
 gem 'puma', '~> 3.0'
-# Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
-# gem 'jbuilder', '~> 2.5'
+
+# Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
+gem 'rack-cors'
 
 # For serializing.
 gem 'active_model_serializers'

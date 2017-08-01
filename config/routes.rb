@@ -1,10 +1,9 @@
 Rails.application.routes.draw do
 
-  resources :points
+  get '/cumulative-points', to: 'users#demo'
 
-  get '/total_points', to: 'points#total_points'
   #get '/api/v8/courses/:course_id/users/current/points', to: ''
 
-  post '/new-dash-session', to: 'token#newtoken'
+  post '/new-dash-session', to: 'tokens#newtoken'
 
 end

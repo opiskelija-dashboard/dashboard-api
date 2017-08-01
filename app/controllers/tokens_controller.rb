@@ -1,4 +1,4 @@
-class TokenController < ApplicationController
+class TokensController < ApplicationController
   require 'jwt'
 
   skip_before_action :authenticate_request

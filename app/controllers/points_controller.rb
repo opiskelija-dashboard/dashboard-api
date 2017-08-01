@@ -3,6 +3,15 @@ class PointsController < ApplicationController
 
   # Point specifics of all points of the current user as JSON.
   def index
+
+    # Because the ApplicationController ran authenticate_request,
+    # the JWC token body is available at @token.
+    # Rails.logger.debug(@token)
+    # For the TMC access token, you can do
+    # @token['tmctok']
+    # and for the username @token['tmcusr']
+    Rails.logger.debug("TMC access token: " + @token['tmctok'])
+
     render json: Point.all
   end
 

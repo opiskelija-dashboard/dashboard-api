@@ -1,8 +1,14 @@
-class Point < ApplicationRecord
-  validates :point_id, uniqueness: true
-  belongs_to :submission
+class Point
+  def initialize(id, submission_id)
+    @id = id
+    @submission_id = submission_id
+  end
 
-  def achieved_at
-    self.created_at.to_s
+  def getSubmissionId
+    @submission_id
+  end
+
+  def getId
+    @id
   end
 end

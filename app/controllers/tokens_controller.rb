@@ -1,4 +1,4 @@
-class TokenController < ApplicationController
+class TokensController < ApplicationController
   require 'jwt'
   require 'net/http' # since ruby 2.4.1 "require 'net/https'" isn't necessary
   require 'json'

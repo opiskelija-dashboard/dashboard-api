@@ -4,11 +4,11 @@ class Point
     @submission_id = submission_id
   end
 
-  def getSubmissionId
+  def submission_id
     @submission_id
   end
 
-  def getId
+  def id
     @id
   end
 end

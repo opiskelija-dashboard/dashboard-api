@@ -36,5 +36,15 @@ module DashboardBackend
         resource '*', :headers => :any, :methods => [:get, :post, :options]
       end
     end
+
+    # Configuration for our code
+    config.tmc_api_base_address = "https://tmc.mooc.fi/api/v8"
+
+    # Create a short, insecure secret for every new server instance.
+    # This is a step up from just using "secret", but still not crypto-
+    # graphically secure; in production we'd do this properly.
+    six_digit_hex_string = "%6x" % Random::rand(65536 * 256)
+    config.jwt_secret = six_digit_hex_string.upcase
+
   end
 end

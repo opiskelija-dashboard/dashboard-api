@@ -6,6 +6,8 @@ class TokensController < ApplicationController
   skip_before_action :authenticate_request
 
   def newtoken
+    Rails.logger.info("JWT secret for this session: \"" + Rails.configuration.jwt_secret + '"')
+
     tmc_username = params[:tmc_username]
     tmc_access_token = params[:tmc_access_token]
 
@@ -17,9 +19,7 @@ class TokensController < ApplicationController
 
     if (usernames_match)
       expiry = 24.hours.from_now.to_i
-      # in proper use we'd fetch the secret from a conf file or
-      # environment variable instead of hardcoding it into the program
-      secret = 'secret'
+      secret = Rails.configuration.jwt_secret
       token_payload = {
         tmcusr: tmc_username,
         tmctok: tmc_access_token,
@@ -43,7 +43,6 @@ class TokensController < ApplicationController
   end
 
   def verify_given_credentials(given_username, acctok)
-
     api_call_result = do_tmc_api_get('/users/current', acctok);
 
     if (api_call_result[:success])
@@ -68,7 +67,7 @@ class TokensController < ApplicationController
   # returns a hash structured thusly:
   # { :success => true/false, :code => <http response code>, :body => <decoded JSON response from api> }
   def do_tmc_api_get(endpoint, access_token)
-    tmc_api_base_address = "https://tmc.mooc.fi/api/v8"
+    tmc_api_base_address = Rails.configuration.tmc_api_base_address
     tmc_api_endpoint = "/users/current"
     full_api_call_address = tmc_api_base_address + tmc_api_endpoint
 

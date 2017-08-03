@@ -4,11 +4,11 @@ class Submission
     @created_at = created_at
   end
 
-  def getCreatedAt
+  def created_at
     @created_at
   end
 
-  def getId
+  def id
     @id
   end
 end

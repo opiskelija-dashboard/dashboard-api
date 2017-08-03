@@ -1,7 +1,6 @@
 class CumulativePointsController < ApplicationController
   before_action :set_cumulative_point
 
-
   def cumulative_point_current
     render json: @cumulative_point
   end

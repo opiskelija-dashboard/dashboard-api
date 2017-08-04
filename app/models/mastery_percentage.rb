@@ -5,9 +5,10 @@ class MasteryPercentage
   SKILLS_URL = 'http://secure-wave-81252.herokuapp.com/skills'
   EXERCISES_URL = 'http://secure-wave-81252.herokuapp.com/exercises'
   INCLUDABLES_URL = 'http://secure-wave-81252.herokuapp.com/skills-raw'
-  CURRENT_USER_POINTS_URL = 'http://secure-wave-81252.herokuapp.com/points'
-  USER_POINTS_URL = 'http://secure-wave-81252.herokuapp.com/all_points'
+  CURRENT_USER_POINTS_URL = 'http://secure-wave-81252.herokuapp.com/single-points'
+  USER_POINTS_URL = 'http://secure-wave-81252.herokuapp.com/all-points'
   
+  # Fetches JSON from a url and returns it in a hash.
   def make_http_request_hash(url)
     uri = URI.parse(url)
     http = Net::HTTP.new(uri.host, uri.port)
@@ -17,21 +18,11 @@ class MasteryPercentage
     JSON.parse response.body
   end
   
-  def set_skills(url)    
-    skills = []
-    hash = make_http_request_hash(url)
-    
-    hash.each do |skill|
-      skills << Skill.new(skill['label'], skill['user'], skill['average'])
-    end
-    skills
-  end
-  
   # Returns a hash of all exercises: key = id, value = available points.
   def set_all_exercises(url)
     exercises = {}
     hash = make_http_request_hash(url)
-
+    
     hash.each do |exercise|
       exercises[exercise['id']] = exercise['available_points']
     end
@@ -88,9 +79,17 @@ class MasteryPercentage
   def user_skills
     user_skill_points = {}
     match_labels_and_available_points.each do | label, array |
-      user_skill_points[label] = (array.map {|point| point["id"]}.uniq) & (CumulativePoint.new.user_points[0].map {|point| point.id}.uniq)
+      user_skill_points[label] = (array.map {|point| point["id"]}) & (CumulativePoint.new.user_points[0].map {|point| point.id}.uniq)
     end
     user_skill_points
+  end
+  
+  def all_skills
+    all_skill_points = {}
+    match_labels_and_available_points.each do | label, array |
+      all_skill_points[label] = (array.map {|point| point["id"]}) & (CumulativePoint.new.all_points[0].map {|point| point.id}.uniq)
+    end
+    all_skill_points
   end
   
   def user_skill_percentage
@@ -100,18 +99,52 @@ class MasteryPercentage
     user_skill_points.each do | label, array |
       hash[label] = array.count / match_hash[label].count.to_f
     end
+    hash
   end
   
-  #def all_skills
-  #  skill_points = {}
-  #  match_labels_and_available_points.each do | label, array |
-    #    skill_points[label] = array & (@awarded_points.map {|point| point.id}.uniq)
-    
-    #  end
-    #  skill_points
-    #end
-    
-    def skills
-      set_skills(SKILLS_URL)
+  def average
+    hash = {}
+    all_skill_points = all_skills
+    match_hash = match_labels_and_available_points
+    all_skill_points.each do | label, array |
+      hash[label] = array.count/(CumulativePoint.new.all_points[1].count) / match_hash[label].count.to_f
     end
+    hash
   end
+  
+  def skill_percentage
+    avg = average
+    labels = avg.keys
+    all = avg.values
+    user = user_skill_percentage.values
+
+    hash = {}
+    i = 0
+    begin 
+      array = []
+      array << all[i]
+      array << user[i]
+      hash[labels[i]] = array 
+      i = i + 1
+    end until i == labels.count
+    hash
+  end
+  
+  
+  # Returns hardcoded skill percentages from mock-API. 
+  def skills(url)    
+    skills_array = []
+    json_hash = make_http_request_hash(url)
+    
+    json_hash.each do |skill|
+      skills_array << Skill.new(skill['label'], skill['user'], skill['average'])
+    end
+    skills_array
+  end
+  
+  # NOTE! When there is a useful TMC server end point for ready skill procentages:
+  # replace the SKILLS_URL below and in the beginning of the file with corresponding correct API address path.
+  #def skill_percentages
+  #  skills(SKILLS_URL)
+  #end
+end

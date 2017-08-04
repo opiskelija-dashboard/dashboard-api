@@ -34,7 +34,7 @@ class ApplicationController < ActionController::API
 
       # in proper use we'd fetch the secret from a conf file or
       # environment variable instead of hardcoding it into the program
-      secret = 'secret'
+      secret = Rails.configuration.jwt_secret
 
       decoded_token = JWT.decode(encoded_token_string, secret, true, {:algorithm => 'HS256'})
       # the format:
@@ -49,7 +49,7 @@ class ApplicationController < ActionController::API
       render json: { "errors" => # json:api format
           [{
             "title" => "Invalid Auth Token",
-            "detail" => "Either: a JWT token was not included in the Authorization HTTP header; the header was malformed; or the token is invalid or corrupt.",
+            "detail" => "Either: a JWT token was not included in the Authorization HTTP header; the header was malformed; or the token is invalid or corrupt. (Verification Error)",
           }]
         },
         status: 401

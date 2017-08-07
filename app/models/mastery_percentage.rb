@@ -7,7 +7,7 @@ class MasteryPercentage
   INCLUDABLES_URL = 'http://secure-wave-81252.herokuapp.com/skills-raw'
   CURRENT_USER_POINTS_URL = 'http://secure-wave-81252.herokuapp.com/single-points'
   USER_POINTS_URL = 'http://secure-wave-81252.herokuapp.com/all-points'
-  
+
   # Fetches JSON from a url and returns it in a hash.
   def make_http_request(url)
     uri = URI.parse(url)
@@ -105,7 +105,7 @@ class MasteryPercentage
   def label_average
     hash = {}
     all_skills.each do | label, value |
-      hash[label] = (value.to_f/CumulativePoint.new.all_points[1].count).round(2)
+      hash[label] = (value.to_f/CumulativePoint.new.all_points[1].count)/match_labels_and_available_points[label].count
     end
     hash
   end
@@ -121,8 +121,8 @@ class MasteryPercentage
     begin 
       hash = {}
       hash["label"] = labels[i]
-      hash["user"] = user[i].round(2)
-      hash["average"] = all[i]
+      hash["user"] = (user[i]*100).round(1)
+      hash["average"] = (all[i]*100).round(1)
       array << hash
       i = i + 1
     end until i == labels.count

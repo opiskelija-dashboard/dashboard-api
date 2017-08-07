@@ -19,7 +19,7 @@ class MasteryPercentage
   end
   
   # Returns a hash of all exercises: key = id, value = available points.
-  def set_all_exercises(url)
+  def all_exercises(url)
     exercises = {}
     hash = make_http_request_hash(url)
     
@@ -30,7 +30,7 @@ class MasteryPercentage
   end
   
   # Returns a hash of exercises that correspond certain labels: key = label, value = array of exercises.
-  def set_includable_exercises(url)
+  def includable_exercises(url)
     includables = {}
     hash = make_http_request_hash(url)
     
@@ -42,8 +42,8 @@ class MasteryPercentage
   
   # Intersects all exercises (ids) and those that correspond certain labels to a hash.
   def intersect_ids
-    includables = set_includable_exercises(INCLUDABLES_URL)
-    all_exercises = set_all_exercises(EXERCISES_URL)
+    includables = includable_exercises(INCLUDABLES_URL)
+    all_exercises = all_exercises(EXERCISES_URL)
     
     intersect_ids = {}
     includables.each do |label, array|
@@ -55,7 +55,7 @@ class MasteryPercentage
   
   # Returns a hash of available points corresponding certain labels.
   def match_labels_and_available_points
-    all_exercises = set_all_exercises(EXERCISES_URL)
+    all_exercises = all_exercises(EXERCISES_URL)
     intersect = intersect_ids
     
     available_points = {}
@@ -79,17 +79,23 @@ class MasteryPercentage
   def user_skills
     user_skill_points = {}
     match_labels_and_available_points.each do | label, array |
-      user_skill_points[label] = (array.map {|point| point["id"]}) & (CumulativePoint.new.user_points[0].map {|point| point.id}.uniq)
+      user_skill_points[label] = ((array.map {|point| point["id"]}) & (CumulativePoint.new.user_points[0].map {|point| point.id})).round(2)
     end
     user_skill_points
   end
   
   def all_skills
-    all_skill_points = {}
+    skill_points = {}
+    cp = CumulativePoint.new.all_points[0].map {|point| point.id}
     match_labels_and_available_points.each do | label, array |
-      all_skill_points[label] = (array.map {|point| point["id"]}) & (CumulativePoint.new.all_points[0].map {|point| point.id}.uniq)
+      keys = array.map {|point| point["id"]} # ids
+      hash = {}
+      keys.each do |key|
+        hash[key] = cp.count(key)
+      end
+      skill_points[label] = hash.values.inject(0){|sum,x| sum + x }
     end
-    all_skill_points
+    skill_points
   end
   
   def user_skill_percentage
@@ -104,10 +110,8 @@ class MasteryPercentage
   
   def average
     hash = {}
-    all_skill_points = all_skills
-    match_hash = match_labels_and_available_points
-    all_skill_points.each do | label, array |
-      hash[label] = array.count/(CumulativePoint.new.all_points[1].count) / match_hash[label].count.to_f
+    all_skills.each do | label, value |
+      hash[label] = (value.to_f/CumulativePoint.new.all_points[1].count).round(2)
     end
     hash
   end
@@ -117,21 +121,22 @@ class MasteryPercentage
     labels = avg.keys
     all = avg.values
     user = user_skill_percentage.values
-
-    hash = {}
+    
+    array = []
     i = 0
     begin 
-      array = []
-      array << all[i]
-      array << user[i]
-      hash[labels[i]] = array 
+      hash = {}
+      hash["label"] = labels[i]
+      hash["user"] = user[i]
+      hash["average"] = all[i]
+      array << hash
       i = i + 1
     end until i == labels.count
-    hash
+    array
   end
   
   
-  # Returns hardcoded skill percentages from mock-API. 
+  # Returns hardcoded skill percentages (for now from mock-API). 
   def skills(url)    
     skills_array = []
     json_hash = make_http_request_hash(url)

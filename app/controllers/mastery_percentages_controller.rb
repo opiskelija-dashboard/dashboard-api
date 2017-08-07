@@ -1,5 +1,5 @@
 class MasteryPercentagesController < ApplicationController
-  before_action :set_mastery_percentage
+  before_action :mastery_percentage
   
   skip_before_action :authenticate_request
   
@@ -10,7 +10,7 @@ class MasteryPercentagesController < ApplicationController
   
   private
   
-  def set_mastery_percentage
+  def mastery_percentage
     @mastery_percentage = MasteryPercentage.new
   end
 end

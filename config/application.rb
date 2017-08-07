@@ -43,8 +43,9 @@ module DashboardBackend
     # Create a short, insecure secret for every new server instance.
     # This is a step up from just using "secret", but still not crypto-
     # graphically secure; in production we'd do this properly.
-    six_digit_hex_string = "%6x" % Random::rand(65536 * 256)
+    six_digit_hex_string = "%06x" % Random::rand(65536 * 256)
     config.jwt_secret = six_digit_hex_string.upcase
 
+    config.jwt_verify_tmc_credentials = true
   end
 end

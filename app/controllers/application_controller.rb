@@ -4,55 +4,59 @@ class ApplicationController < ActionController::API
   private
 
   def authenticate_request
-    token_payload = decode_token_from_header
+    token_string = unpack_token_from_header
 
-    if token_payload
-      # because the token was signed by us, we can trust it
-      @token = token_payload
-      return true
-    else
-      render json: { "errors" => # json:api format
-          [{
-            "title" => "No Auth Token",
-            "detail" => "Either: a JWT token was not included in the Authorization HTTP header; the header was malformed; or the token is invalid or corrupt.",
-          }]
-        },
-        status: 401
+    if (token_string == false || token_string.nil?)
+      return false
     end
 
+    token = Token.new_from_jwt_string(token_string)
+    if (token.valid?)
+      @token = token
+      return true
+    else
+      if (token.errors?)
+        render json: { # json:api format
+          "errors" => token.errors
+        }, status: 401
+      else
+        render json: { "errors" =>
+          [{
+            "title" => "Unknown token error",
+            "detail" => "The JWT token you gave was invalid, but no more specific error is known."
+          }]
+        }, status: 401
+      end
+      return false
+    end
   end
 
-  def decode_token_from_header
+  def unpack_token_from_header
     if request.headers['Authorization'].present?
       header = request.headers['Authorization']
       regex = /^Bearer (.*)/
       encoded_token_string = header[regex, 1]
-      
+
       if (encoded_token_string.nil?)
-        return nil
+        render json: { "errors" =>
+          [{
+            "title" => "No JWT token in header",
+            "detail" => "The server's string processing facilities failed to see a token (prefixed by 'Bearer ') in the Authorization header."
+          }]
+        }, status: 401
+        return false
       end
 
-      # in proper use we'd fetch the secret from a conf file or
-      # environment variable instead of hardcoding it into the program
-      secret = 'secret'
-
-      decoded_token = JWT.decode(encoded_token_string, secret, true, {:algorithm => 'HS256'})
-      # the format:
-      # [{"tmcusr"=>  "username", "tmctok"=>"ABCD", "exp"=>1500000000}, {"typ"=>"JWT", "alg"=>"HS256"}]
-      #Rails.logger.debug(decoded_token.inspect)
-
-      token_payload = decoded_token[0]
-      return token_payload
+      return encoded_token_string
+    else
+      render json: { "errors" =>
+        [{
+          "title" => "Missing 'Authorization' header",
+          "detail" => "This resource requires a valid JSON Web Token signed by this server."
+        }]
+      }, status: 401
+      return false
     end
-    rescue JWT::VerificationError
-      
-      render json: { "errors" => # json:api format
-          [{
-            "title" => "Invalid Auth Token",
-            "detail" => "Either: a JWT token was not included in the Authorization HTTP header; the header was malformed; or the token is invalid or corrupt.",
-          }]
-        },
-        status: 401
   end
 
 end

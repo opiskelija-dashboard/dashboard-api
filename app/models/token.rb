@@ -1,7 +1,6 @@
 class Token
   require 'jwt'
-  require 'json'
-  require 'net/http' # since ruby 2.4.1 "require 'net/https'" isn't necessary
+  #require 'http_helpers'
 
   JWT_HASH_ALGO = 'HS256'
   @@jwt_secret = Rails.configuration.jwt_secret;
@@ -161,36 +160,6 @@ class Token
     end
   end
 
-  # returns a hash structured thusly:
-  # { :success => true/false, :code => <http response code>, :body => <decoded JSON response from api> }
-  def do_tmc_api_get(endpoint, access_token)
-    tmc_api_base_address = Rails.configuration.tmc_api_base_address
-    tmc_api_endpoint = "/users/current"
-    full_api_call_address = tmc_api_base_address + tmc_api_endpoint
-
-    authtokenstring = 'Bearer ' + access_token
-
-    uri = URI.parse(full_api_call_address)
-    request = Net::HTTP::Get.new(uri)
-    request['Authorization'] = authtokenstring
-    #Rails.logger.debug("HTTP::Get object's headers:");
-    #request.each_header { |h, v| Rails.logger.debug("\t" + h + ": " + v) }
-
-    response = Net::HTTP.start(uri.hostname, uri.port,
-        :use_ssl => true, :verify_mode => OpenSSL::SSL::VERIFY_PEER) { |http|
-      http.request(request)
-    }
-
-    if (response.code.to_s == "200")
-      response_hash = JSON.parse(response.body);
-      return_hash = { :success => true, :code => response.code, :body => response_hash }
-      return return_hash
-    else
-      Rails.logger.debug("do_tmc_api_get: GET to " + full_api_call_address + " returned code " + response.code.inspect + " (!= 200). Response body: " + response.body);
-      return_hash = { :success => false, :code => response.code, :body => response.body}
-    end
-  end
-
 
   private
 
@@ -207,7 +176,7 @@ class Token
 
 
   def verify_given_credentials(given_username, tmc_access_token)
-    api_call_result = do_tmc_api_get('/users/current', tmc_access_token);
+    api_call_result = HttpHelpers.tmc_api_get('/users/current', tmc_access_token);
 
     if (api_call_result[:success])
       response_hash = api_call_result[:body]

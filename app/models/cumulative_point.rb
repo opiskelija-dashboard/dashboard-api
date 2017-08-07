@@ -2,29 +2,21 @@ class CumulativePoint
   include ActiveModel::Serializers::JSON
 
   #URLS - Change these to the correct ones when possible.
-  # who thought it was a good idea to not give the mock api the same endpoint
-  # names as are used in the real api?
-  CURRENT_USER_POINTS_ENDPOINT = '/api/v8/courses/:course_id/users/current/points'
-  ALL_USER_POINTS_ENDPOINT = '/api/v8/courses/:course_id/points'
-  CURRENT_USER_SUBMISSIONS_ENDPOINT = '/api/v8/courses/:course_id/users/current/submissions'
-  # set this from config/application.rb
-  API_BASE_ADDRESS = 'http://secure-wave-81252.herokuapp.com'
-
-  def initialize(token)
-    @token = token
-  end
+  CURRENT_USER_POINTS_URL = 'http://secure-wave-81252.herokuapp.com/single-points'
+  ALL_USER_POINTS_URL = 'http://secure-wave-81252.herokuapp.com/all-points'
+  CURRENT_USER_SUBMISSIONS_URL = 'http://secure-wave-81252.herokuapp.com/submissions'
 
   # Returns an array of all points of user(s) and all user ids from url.
-  def get_points(endpoint)
+  def set_points(url)
     points = []
     user_ids = {}
 
-    # without the API_BASE_ADDRESS this will use Rails.configuration.tmc_api_base_address,
-    # like everything should
-    response = HttpHelpers.tmc_api_get(endpoint, @token.tmc_token, API_BASE_ADDRESS)
-    # This really should also check response[:success] before continuing
+    uri = URI.parse(url)
+    http = Net::HTTP.new(uri.host, uri.port)
+    request = Net::HTTP::Get.new(uri.request_uri)
+    response = http.request(request)
 
-    hash = response[:body]
+    hash = JSON.parse response.body
     hash.each do |point|
       points << Point.new(point['awarded_point']['id'], point['awarded_point']['submission_id'])
       user_ids[point['awarded_point']['user_id']] = 0
@@ -36,23 +28,23 @@ class CumulativePoint
   end
 
   def user_points
-    get_points(CURRENT_USER_POINTS_ENDPOINT)
+    set_points(CURRENT_USER_POINTS_URL)
   end
 
   def all_points
-    get_points(ALL_USER_POINTS_ENDPOINT)
+    set_points(ALL_USER_POINTS_URL)
   end
 
   # Creates a hash of all the submissions of the user.
-  def get_submissions
+  def set_submissions
     submissions = {}
 
-    endpoint = CURRENT_USER_SUBMISSIONS_ENDPOINT
+    uri = URI.parse(CURRENT_USER_SUBMISSIONS_URL)
+    http = Net::HTTP.new(uri.host, uri.port)
+    request = Net::HTTP::Get.new(uri.request_uri)
+    response = http.request(request)
 
-    response = HttpHelpers.tmc_api_get(endpoint, @token.tmc_token, API_BASE_ADDRESS)
-    # todo: check response[:success]
-
-    hash = response[:body]
+    hash = JSON.parse response.body
 
     hash.each do |submission|
       sub = Submission.new(submission['id'], submission['created_at'])
@@ -64,7 +56,7 @@ class CumulativePoint
   # Returns hash: keys = days, values = points
   def hash_for_days_and_points
     points = user_points[0]
-    submissions = get_submissions
+    submissions = set_submissions
 
     # Adds every submissions created_at to an array and sorts it.
     days = []

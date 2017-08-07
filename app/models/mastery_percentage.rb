@@ -9,7 +9,7 @@ class MasteryPercentage
   USER_POINTS_URL = 'http://secure-wave-81252.herokuapp.com/all-points'
   
   # Fetches JSON from a url and returns it in a hash.
-  def make_http_request_hash(url)
+  def make_http_request(url)
     uri = URI.parse(url)
     http = Net::HTTP.new(uri.host, uri.port)
     request = Net::HTTP::Get.new(uri.request_uri)
@@ -19,30 +19,28 @@ class MasteryPercentage
   end
   
   # Returns a hash of all exercises: key = id, value = available points.
-  def all_exercises(url)
+  def get_all_exercises(url)
     exercises = {}
-    hash = make_http_request_hash(url)
     
-    hash.each do |exercise|
-      exercises[exercise['id']] = exercise['available_points']
+    make_http_request(url).each do |e|
+      exercises[e['id']] = e['available_points']
     end
     exercises
   end
   
-  # Returns a hash of exercises that correspond certain labels: key = label, value = array of exercises.
-  def includable_exercises(url)
-    includables = {}
-    hash = make_http_request_hash(url)
-    
-    hash.each do |includable|
-      includables[includable['label']] = includable['exercises']
+  # Returns a hash of exercises by certain labels: key = label, value = array of exercises.
+  def get_exercises_by_labels(url)
+    exercises = {}
+
+    make_http_request(url).each do |e|
+      exercises[e['label']] = e['exercises']
     end
-    includables
+    exercises
   end
   
-  # Intersects all exercises (ids) and those that correspond certain labels to a hash.
-  def intersect_ids
-    includables = includable_exercises(INCLUDABLES_URL)
+  # Intersects all exercises (ids) and those that correspond certain labels, to a hash.
+  def intersect_exercise_ids
+    exercises = get_exercises_by_labels(INCLUDABLES_URL)
     all_exercises = all_exercises(EXERCISES_URL)
     
     intersect_ids = {}

@@ -1,6 +1,5 @@
 class Token
   require 'jwt'
-  #require 'http_helpers'
 
   JWT_HASH_ALGO = 'HS256'
   @@jwt_secret = Rails.configuration.jwt_secret;

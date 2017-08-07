@@ -59,10 +59,8 @@ class MasteryPercentage
     intersect = intersect_ids
     
     available_points = {}
-    intersect.each do |label, array|
-      
+    intersect.each do |label, array| 
       array.each do |id|
-        
         if available_points[label] == nil
           available_points[label] = all_exercises[id]
         else
@@ -70,9 +68,7 @@ class MasteryPercentage
         end
       end
       available_points[label].flatten.uniq
-      
     end
-    
     available_points
   end
   
@@ -108,7 +104,7 @@ class MasteryPercentage
     hash
   end
   
-  def average
+  def label_average
     hash = {}
     all_skills.each do | label, value |
       hash[label] = (value.to_f/CumulativePoint.new.all_points[1].count).round(2)
@@ -117,7 +113,7 @@ class MasteryPercentage
   end
   
   def skill_percentage
-    avg = average
+    avg = label_average
     labels = avg.keys
     all = avg.values
     user = user_skill_percentage.values
@@ -134,7 +130,6 @@ class MasteryPercentage
     end until i == labels.count
     array
   end
-  
   
   # Returns hardcoded skill percentages (for now from mock-API). 
   def skills(url)    

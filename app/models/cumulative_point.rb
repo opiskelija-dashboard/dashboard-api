@@ -106,4 +106,9 @@ class CumulativePoint
     
     points
   end
+
+  def average
+    points_and_users = all_points
+    (all_points[0].count / all_points[1].count.to_f).round(2)
+  end
 end

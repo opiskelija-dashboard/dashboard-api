@@ -2,7 +2,8 @@ class CumulativePoint
   include ActiveModel::Serializers::JSON
 
   #URLS - Change these to the correct ones when possible.
-  CURRENT_USER_POINTS_URL = 'http://secure-wave-81252.herokuapp.com/points'
+  CURRENT_USER_POINTS_URL = 'http://secure-wave-81252.herokuapp.com/single-points'
+  ALL_USER_POINTS_URL = 'http://secure-wave-81252.herokuapp.com/all-points'
   CURRENT_USER_SUBMISSIONS_URL = 'http://secure-wave-81252.herokuapp.com/submissions'
 
   # Returns an array of all points of user(s) and all user ids from url.
@@ -30,9 +31,9 @@ class CumulativePoint
     set_points(CURRENT_USER_POINTS_URL)
   end
 
-#  def all_points
-#    set_points('http://secure-wave-81252.herokuapp.com/points')
-#  end
+  def all_points
+    set_points(ALL_USER_POINTS_URL)
+  end
 
   # Creates a hash of all the submissions of the user.
   def set_submissions
@@ -92,7 +93,7 @@ class CumulativePoint
   # Returns points 
   def points
     hash = hash_for_days_and_points
-    
+
     points = []
     points[0] = hash.values[0]
 
@@ -104,5 +105,10 @@ class CumulativePoint
     end until i == hash.length
 
     points
+  end
+
+  def average
+    points_and_users = all_points
+    (all_points[0].count / all_points[1].count.to_f).round(2)
   end
 end

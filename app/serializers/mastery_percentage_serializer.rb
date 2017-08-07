@@ -1,3 +1,3 @@
 class MasteryPercentageSerializer < ActiveModel::Serializer
-  attributes :skills
+  attributes :skill_percentage
 end

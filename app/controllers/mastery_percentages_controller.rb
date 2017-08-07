@@ -1,5 +1,5 @@
 class MasteryPercentagesController < ApplicationController
-  before_action :set_mastery_percentage
+  before_action :mastery_percentage
 
   def skill_percentage_current
     render json: @mastery_percentage
@@ -7,7 +7,7 @@ class MasteryPercentagesController < ApplicationController
 
   private
 
-  def set_mastery_percentage
+  def mastery_percentage
     @mastery_percentage = MasteryPercentage.new
   end
 end

@@ -1,12 +1,7 @@
 class Exercise
-  def initialize(id, name)
+  def initialize(id)
     @id = id
-    @name = name
     @available_points = 0
-  end
-
-  def name
-    @name
   end
 
   def id

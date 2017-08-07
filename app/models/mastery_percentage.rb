@@ -75,7 +75,7 @@ class MasteryPercentage
   def user_skills
     user_skill_points = {}
     match_labels_and_available_points.each do | label, array |
-      user_skill_points[label] = ((array.map {|point| point["id"]}) & (CumulativePoint.new.user_points[0].map {|point| point.id})).round(2)
+      user_skill_points[label] = ((array.map {|point| point["id"]}) & (CumulativePoint.new.user_points[0].map {|point| point.id}))
     end
     user_skill_points
   end
@@ -123,7 +123,7 @@ class MasteryPercentage
     begin 
       hash = {}
       hash["label"] = labels[i]
-      hash["user"] = user[i]
+      hash["user"] = user[i].round(2)
       hash["average"] = all[i]
       array << hash
       i = i + 1

@@ -107,7 +107,7 @@ class MasteryPercentage
   def label_average
     average = {}
     all_skills.each do | label, number_of_points |
-      average[label] = number_of_points.to_f / CumulativePoint.new.all_points[1].count
+      average[label] = number_of_points.to_f / CumulativePoint.new.all_points[1].count / match_labels_with_available_points[label].count
     end
     average
   end
@@ -124,8 +124,8 @@ class MasteryPercentage
     begin 
       partial = {}
       partial["label"] = labels[i]
-      partial["user"] = (current_user[i]*100).round(2)
-      partial["average"] = (all[i]*100).round(2)
+      partial["user"] = (current_user[i]*100).round(1)
+      partial["average"] = (all[i]*100).round(1)
       percentages << partial
       i = i + 1
     end until i == labels.count

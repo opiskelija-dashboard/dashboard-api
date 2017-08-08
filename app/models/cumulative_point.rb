@@ -2,11 +2,11 @@ class CumulativePoint
   include ActiveModel::Serializers::JSON
 
   #URLS - Change these to the correct ones when possible.
-  CURRENT_USER_POINTS_ENDPOINT = '/api/v8/courses/:course_id/users/current/points'
-  ALL_USER_POINTS_ENDPOINT = '/api/v8/courses/:course_id/points'
-  CURRENT_USER_SUBMISSIONS_ENDPOINT = '/api/v8/courses/:course_id/users/current/submissions'
+  CURRENT_USER_POINTS_ENDPOINT = '/courses/:course_id/users/current/points'
+  ALL_USER_POINTS_ENDPOINT = '/courses/:course_id/points'
+  CURRENT_USER_SUBMISSIONS_ENDPOINT = '/courses/:course_id/users/current/submissions'
   # set this from config/application.rb
-  API_BASE_ADDRESS = 'http://secure-wave-81252.herokuapp.com'
+  API_BASE_ADDRESS = 'http://secure-wave-81252.herokuapp.com/api/v8'
 
   def initialize(token)
     @token = token
@@ -20,11 +20,12 @@ class CumulativePoint
     # without the API_BASE_ADDRESS this will use Rails.configuration.tmc_api_base_address,
     # like everything should
     response = HttpHelpers.tmc_api_get(endpoint, @token.tmc_token, API_BASE_ADDRESS)
-    # This really should also check response[:success] before continuing
 
-    response[:body].each do |point|
-      points << Point.new(point['awarded_point']['id'], point['awarded_point']['submission_id'])
-      user_ids[point['awarded_point']['user_id']] = 0
+    if response[:success]
+      response[:body].each do |point|
+        points << Point.new(point['awarded_point']['id'], point['awarded_point']['submission_id'])
+        user_ids[point['awarded_point']['user_id']] = 0
+      end
     end
 
     points_user_ids = []
@@ -44,16 +45,19 @@ class CumulativePoint
   def get_submissions
     submissions = {}
 
+    endpoint = CURRENT_USER_SUBMISSIONS_ENDPOINT
+
     # without the API_BASE_ADDRESS this will use Rails.configuration.tmc_api_base_address,
     # like everything should
     response = HttpHelpers.tmc_api_get(endpoint, @token.tmc_token, API_BASE_ADDRESS)
-    # This really should also check response[:success] before continuing
 
-    response[:body].each do |submission|
-      sub = Submission.new(submission['id'], submission['created_at'])
-      submissions[sub.id] = sub
+    if response[:success]
+      response[:body].each do |submission|
+        sub = Submission.new(submission['id'], submission['created_at'])
+        submissions[sub.id] = sub
+      end
+      submissions
     end
-    submissions
   end
 
   # Returns hash: keys = days, values = points

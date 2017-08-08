@@ -20,6 +20,9 @@ group :production do
    gem 'rails_12factor'
 end
 
+# Helps with testing API. Github: https://github.com/rack-test/rack-test
+gem 'rack-test', require: 'rack/test'
+
 # Use Puma as the app server
 gem 'puma', '~> 3.0'
 

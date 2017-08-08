@@ -3,7 +3,7 @@ class CumulativePoint
   
   #URLS - Change these to the correct ones when possible.
   CURRENT_USER_POINTS_ENDPOINT = '/api/v8/courses/:course_id/users/current/points'
-  ALL_USER_POINTS_ENDPOINT_ENDPOINT = '/api/v8/courses/:course_id/points'
+  ALL_USER_POINTS_ENDPOINT = '/api/v8/courses/:course_id/points'
   CURRENT_USER_SUBMISSIONS_ENDPOINT = '/api/v8/courses/:course_id/users/current/submissions'
   # set this from config/application.rb
   API_BASE_ADDRESS = 'http://secure-wave-81252.herokuapp.com'

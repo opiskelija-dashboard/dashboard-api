@@ -75,7 +75,7 @@ class CumulativePoint
       day += 1
     end until day > days.last
 
-    # Adds the amount of submissions made to each day. 
+    # Adds the amount of submissions made to each day.
     i = 0
     begin
       hash["#{days[i]}"] = hash["#{days[i]}"] + 1
@@ -85,12 +85,12 @@ class CumulativePoint
     hash
   end
 
-  # Returns days of the hash_for_days_and_points hash.  
+  # Returns days of the hash_for_days_and_points hash.
   def days
     hash_for_days_and_points.keys
   end
 
-  # Returns points 
+  # Returns points
   def points
     hash = hash_for_days_and_points
 

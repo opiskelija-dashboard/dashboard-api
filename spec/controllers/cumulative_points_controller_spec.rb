@@ -12,7 +12,7 @@ describe CumulativePointsController do
       "tmctok" => "token",
       "exp" => (Time.now + 86400).to_i
       }
-       
+
       JWT_HASH_ALGO = 'HS256'
       token = JWT.encode(token_payload, jwt_secret, JWT_HASH_ALGO)
       header "Authorization", "Bearer #{token}"
@@ -24,11 +24,11 @@ describe CumulativePointsController do
       expect(last_response.status).to eq 200
     end
 
-#    it 'returns days, points and average' do
-#      expect(last_response.body).to have_content 'days:'
-#      expect(last_response.body).to have_content 'points:'
-#      expect(last_response.body).to have_content 'average:'
-#    end
+    it 'returns days, points and average' do
+      expect(json["days"]).not_to be_nil
+      expect(json["points"]).not_to be_nil
+      expect(json["average"]).not_to be_nil
+    end
   end
 
 end

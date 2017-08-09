@@ -1,64 +1,70 @@
 class MasteryPercentage
   include ActiveModel::Serializers::JSON
-  
+
   #URLS - Change these to the correct ones when possible.
-  SKILLS_URL = 'http://secure-wave-81252.herokuapp.com/skills'
-  EXERCISES_URL = 'http://secure-wave-81252.herokuapp.com/exercises'
-  INCLUDABLES_URL = 'http://secure-wave-81252.herokuapp.com/skills-raw'
-  CURRENT_USER_POINTS_URL = 'http://secure-wave-81252.herokuapp.com/single-points'
-  USER_POINTS_URL = 'http://secure-wave-81252.herokuapp.com/all-points'
+  SKILLS_ENDPOINT = '/courses/:course_id/users/:user_id/skills'
+  EXERCISES_ENDPOINT = '/courses/:course_id/exercises'
+  LABELED_EXERCISES_ENDPOINT = '/courses/:course_id/skills-raw'
 
-  # Fetches JSON from a url and returns it in a hash.
-  def make_http_request(url)
-    uri = URI.parse(url)
-    http = Net::HTTP.new(uri.host, uri.port)
-    request = Net::HTTP::Get.new(uri.request_uri)
-    response = http.request(request)
-    
-    JSON.parse response.body
+  # set this from config/application.rb
+  API_BASE_ADDRESS = 'http://secure-wave-81252.herokuapp.com/api/v8'
+
+  def initialize(token)
+    @token = token
   end
-  
+
   # Returns a hash of all exercises: key = id, value = available points.
-  def get_all_exercises(url)
-    exercises = {}
-    
-    make_http_request(url).each do |e|
-      exercises[e['id']] = e['available_points']
-    end
-    exercises
-  end
-  
-  # Returns a hash of exercises by certain labels: key = label, value = array of exercises.
-  def get_exercises_by_labels(url)
+  def get_all_exercises(endpoint)
     exercises = {}
 
-    make_http_request(url).each do |e|
-      exercises[e['label']] = e['exercises']
+    # without the API_BASE_ADDRESS this will use Rails.configuration.tmc_api_base_address,
+    # like everything should
+    response = HttpHelpers.tmc_api_get(endpoint, @token.tmc_token, API_BASE_ADDRESS)
+
+    if response[:success]
+      response[:body].each do |e|
+        exercises[e['id']] = e['available_points']
+      end
+      exercises
     end
-    exercises
   end
-  
-  # Intersects all exercises (ids) and those that correspond certain labels, to a hash.
+
+  # Returns a hash of exercises by certain labels: key = label, value = array of exercises.
+  def get_exercises_by_labels(endpoint)
+    exercises = {}
+
+    # without the API_BASE_ADDRESS this will use Rails.configuration.tmc_api_base_address,
+    # like everything should
+    response = HttpHelpers.tmc_api_get(endpoint, @token.tmc_token, API_BASE_ADDRESS)
+
+    if response[:success]
+      response[:body].each do |e|
+        exercises[e['label']] = e['exercises']
+      end
+      exercises
+    end
+  end
+
+  # Intersects all exercises (ids) with some that correspond labels, to a hash.
   def intersect_exercise_ids
-    exercises = get_exercises_by_labels(INCLUDABLES_URL)
-    all_exercises = all_exercises(EXERCISES_URL)
-    
+    all = get_all_exercises(EXERCISES_ENDPOINT)
+
     intersect_ids = {}
-    includables.each do |label, array|
-      ids = includables[label].map {|inc| inc["id"]}
-      intersect_ids[label] = all_exercises.keys & ids
+    get_exercises_by_labels(LABELED_EXERCISES_ENDPOINT).each do |label, exercise|
+      ids = exercise.map {|e| e["id"]}
+      intersect_ids[label] = all.keys & ids
     end
     intersect_ids
   end
-  
-  # Returns a hash of available points corresponding certain labels.
-  def match_labels_and_available_points
-    all_exercises = all_exercises(EXERCISES_URL)
-    intersect = intersect_ids
-    
+
+  # Returns a hash of available points corresponding labels.
+  def match_labels_with_available_points
+    all_exercises = get_all_exercises(EXERCISES_ENDPOINT)
+    intersect_ids = intersect_exercise_ids
+
     available_points = {}
-    intersect.each do |label, array| 
-      array.each do |id|
+    intersect_ids.each do |label, ids|
+      ids.each do |id|
         if available_points[label] == nil
           available_points[label] = all_exercises[id]
         else
@@ -69,80 +75,89 @@ class MasteryPercentage
     end
     available_points
   end
-  
+
+  # Returns a hash of labels as keys and corresponding current user's points as values.
   def user_skills
     user_skill_points = {}
-    match_labels_and_available_points.each do | label, array |
-      user_skill_points[label] = ((array.map {|point| point["id"]}) & (CumulativePoint.new.user_points[0].map {|point| point.id}))
+    match_labels_with_available_points.each do | label, points |
+      user_skill_points[label] = (points.map {|point| point["id"]} & CumulativePoint.new(@token).user_points[0].map {|point| point.id})
     end
     user_skill_points
   end
-  
+
+  # Returns a hash of labels as keys and corresponding number of awarded points as value.
   def all_skills
     skill_points = {}
-    cp = CumulativePoint.new.all_points[0].map {|point| point.id}
-    match_labels_and_available_points.each do | label, array |
-      keys = array.map {|point| point["id"]} # ids
+    cp = CumulativePoint.new(@token).all_points[0].map {|point| point.id}
+    match_labels_with_available_points.each do | label, points |
       hash = {}
-      keys.each do |key|
-        hash[key] = cp.count(key)
+
+      point_ids = points.map {|point| point["id"]} # ids
+      point_ids.each do |id|
+        hash[id] = cp.count(id)
       end
-      skill_points[label] = hash.values.inject(0){|sum,x| sum + x }
+      skill_points[label] = hash.values.inject(0){ |sum,x| sum + x }
     end
     skill_points
   end
-  
-  def user_skill_percentage
-    hash = {}
-    user_skill_points = user_skills
-    match_hash = match_labels_and_available_points
-    user_skill_points.each do | label, array |
-      hash[label] = array.count / match_hash[label].count.to_f
+
+  # Returns a hash of labels as keys and corresponding skill ratio as value.
+  def user_skill_ratio
+    skill_ratio = {}
+    user_skills.each do | label, points |
+      skill_ratio[label] = points.count / match_labels_with_available_points[label].count.to_f
     end
-    hash
+    skill_ratio
   end
-  
+
+  # Returns a hash of labels as keys and corresponding average number of points as value.
   def label_average
-    hash = {}
-    all_skills.each do | label, value |
-      hash[label] = (value.to_f/CumulativePoint.new.all_points[1].count)/match_labels_and_available_points[label].count
+    average = {}
+    all_skills.each do | label, number_of_points |
+      average[label] = number_of_points.to_f / CumulativePoint.new(@token).all_points[1].count / match_labels_with_available_points[label].count
     end
-    hash
+    average
   end
-  
+
+  # Returns array including: labels and corresponding final percentages (current user and all users).
   def skill_percentage
     avg = label_average
     labels = avg.keys
     all = avg.values
-    user = user_skill_percentage.values
-    
-    array = []
+    current_user = user_skill_ratio.values
+
+    percentages = []
     i = 0
-    begin 
-      hash = {}
-      hash["label"] = labels[i]
-      hash["user"] = (user[i]*100).round(1)
-      hash["average"] = (all[i]*100).round(1)
-      array << hash
+    begin
+      partial = {}
+      partial["label"] = labels[i]
+      partial["user"] = (current_user[i]*100).round(1)
+      partial["average"] = (all[i]*100).round(1)
+      percentages << partial
       i = i + 1
     end until i == labels.count
-    array
+    percentages
   end
-  
-  # Returns hardcoded skill percentages (for now from mock-API). 
-  def skills(url)    
+
+  # Returns hardcoded skill percentages (for now from mock-API).
+  def skills(endpoint)
     skills_array = []
-    json_hash = make_http_request_hash(url)
-    
-    json_hash.each do |skill|
-      skills_array << Skill.new(skill['label'], skill['user'], skill['average'])
+
+    # without the API_BASE_ADDRESS this will use Rails.configuration.tmc_api_base_address,
+    # like everything should
+    response = HttpHelpers.tmc_api_get(endpoint, @token.tmc_token, API_BASE_ADDRESS)
+
+    if response[:success]
+      response[:body].each do |skill|
+        skills_array << Skill.new(skill['label'], skill['user'], skill['average'])
+      end
+      skills_array
     end
-    skills_array
   end
-  
+
   # NOTE! When there is a useful TMC server end point for ready skill procentages:
-  # replace the SKILLS_URL below and in the beginning of the file with corresponding correct API address path.
+  # replace the SKILLS_ENDPOINT below and in the beginning of the file with corresponding correct API address path.
   #def skill_percentages
-  #  skills(SKILLS_URL)
+  #  skills(SKILLS_ENDPOINT)
   #end
 end

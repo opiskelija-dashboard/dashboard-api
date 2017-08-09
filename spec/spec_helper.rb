@@ -100,4 +100,5 @@ require 'rspec-rails'
 RSpec.configure do |config|  
   config.include ApiHelper
   config.include Requests::JsonHelpers
+  config.include JwtTokenHelper
 end  

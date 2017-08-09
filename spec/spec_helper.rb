@@ -94,3 +94,10 @@ RSpec.configure do |config|
   Kernel.srand config.seed
 =end
 end
+require 'rails_helper'  
+require 'rspec-rails'
+
+RSpec.configure do |config|  
+  config.include ApiHelper
+  config.include Requests::JsonHelpers
+end  

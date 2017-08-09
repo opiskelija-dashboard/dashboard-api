@@ -20,6 +20,8 @@ group :production do
    gem 'rails_12factor'
 end
 
+gem 'coveralls', require: false
+
 # Helps with testing API. Github: https://github.com/rack-test/rack-test
 gem 'rack-test', require: 'rack/test'
 

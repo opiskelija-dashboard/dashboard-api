@@ -17,10 +17,11 @@ class TokensController < ApplicationController
         "errors" => token.errors
       }, status: 401
     elsif (!token.valid?)
+      Rails.logger.debug("This token is invalid, but we're not sure why: " + token.inspect)
       render json: { "errors" =>
         [{
           "title" => "Just-generated JWT token is invalid",
-          "detail" => "Not sure why the token would be invalid but there weren't any other errors. The token anyway: " + token.jwt
+          "detail" => "Not sure why the token would be invalid but there weren't any other errors. See logs."
         }]
       }, status: 401
     else

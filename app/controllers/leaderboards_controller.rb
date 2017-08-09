@@ -2,7 +2,7 @@ class LeaderboardsController < ApplicationController
 
   @@leaderboards = Hash.new
 
-  # GET /leaderboards/course/:course_id?from=:from&to=:to
+  # GET /leaderboard/course/:course_id?from=:from&to=:to
   def get_range
     course_id = params["course_id"]
     from = params["from"].nil? ? 1 : params["from"].to_i
@@ -28,7 +28,7 @@ class LeaderboardsController < ApplicationController
     render json: { "data" => interesting_subset }
   end
 
-  # GET /leaderboards/course/:course_id/all
+  # GET /leaderboard/course/:course_id/all
   def get_all
     course_id = params["course_id"]
 
@@ -43,7 +43,7 @@ class LeaderboardsController < ApplicationController
     end
   end
 
-  # GET /leaderbaords/course/:course_id/whereis/:user_id
+  # GET /leaderboard/course/:course_id/whereis/:user_id
   def find_user
     course_id = params["course_id"]
     user_id = params["user_id"]
@@ -70,6 +70,14 @@ class LeaderboardsController < ApplicationController
       render json: {"data" => [searched_for]}
       return
     end
+  end
+
+  # GET /leaderboard/course/:courseid/whereis/current
+  def find_current_user
+    # User ID of the current user is passed around in the JWT token
+    params["user_id"] = @token.user_id.to_s
+    # Have the other thing do the stuff
+    return find_user
   end
 
   def update_points

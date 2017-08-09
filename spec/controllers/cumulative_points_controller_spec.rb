@@ -21,12 +21,12 @@ describe CumulativePointsController do
     it 'responds with a 200 status' do 
       expect(last_response.status).to eq 200
     end
-
-#    it 'returns days, points and average' do 
-#      expect(last_response.body).to have_content 'days:'
-#      expect(last_response.body).to have_content 'points:'
-#      expect(last_response.body).to have_content 'average:'
-#    end
+    
+    it 'returns days, points and average' do 
+      expect(json["days"]).not_to be_nil
+      expect(json["points"]).not_to be_nil
+      expect(json["average"]).not_to be_nil
+    end
   end
 
 end

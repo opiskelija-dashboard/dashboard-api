@@ -1,5 +1,8 @@
 # README
 
+[![Coverage Status](https://coveralls.io/repos/github/opiskelija-dashboard/dashboard-api/badge.svg?branch=master)](https://coveralls.io/github/opiskelija-dashboard/dashboard-api?branch=master)
+[![Build Status](https://travis-ci.org/opiskelija-dashboard/dashboard-api.svg?branch=master)](https://travis-ci.org/opiskelija-dashboard/dashboard-api)
+
 API for getting student points from TMC API.
 * Ruby version 2.3.1, Rails v5.0.4
 

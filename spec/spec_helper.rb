@@ -13,6 +13,10 @@
 # it.
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
+
+require 'coveralls'
+Coveralls.wear!
+
 RSpec.configure do |config|
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest
@@ -94,11 +98,11 @@ RSpec.configure do |config|
   Kernel.srand config.seed
 =end
 end
-require 'rails_helper'  
+require 'rails_helper'
 require 'rspec-rails'
 
-RSpec.configure do |config|  
+RSpec.configure do |config|
   config.include ApiHelper
   config.include Requests::JsonHelpers
   config.include JwtTokenHelper
-end  
+end

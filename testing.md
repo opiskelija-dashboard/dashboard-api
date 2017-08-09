@@ -1,16 +1,18 @@
 Things that need testing:
+[] Configure Travis.
 - token? application controller?
     [] returns status 401 when no token given
     [] returns status 401 when wrong token credentials given
     [] returns status 401 when wrong kind of data as credentials are given
     [] returns status 200 when correct token credentials given
-[] cumulative point controller
-    [x] returns status 200 and correct response body
-    [] replace jwt-token module lines with method call
+[x] cumulative point controller
+    [x] returns status 200 
+    [x] returns correct response body
+    [x] replace jwt-token module lines with method call
 [] skill percentage controller
-    [] returns status 200 and correct response body
-
-[] create a module for toke authorization
+    [x] returns status 200 
+    [] returns correct response body
+[x] create a helper module for token authorization
 
 A properly designed API should return two things: 
 an HTTP response status-code and the response body. Testing the status-code is necessary for web applications with user authentication and resources with different permissions. That being said, testing the response body should just verify that the application is sending the right content.

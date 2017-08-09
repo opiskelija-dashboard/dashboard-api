@@ -48,5 +48,7 @@ module DashboardBackend
     #config.jwt_secret = "secret"
 
     config.jwt_verify_tmc_credentials = true
+
+    config.points_store_update_interval = 3600 # seconds
   end
 end

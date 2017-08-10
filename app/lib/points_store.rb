@@ -1,5 +1,17 @@
 class PointsStore
 
+  # Format of raw_user_points elements:
+  # { 'exercise_id' => 33235,
+  #   'awarded_point' => {
+  #     'name' => '01-06',
+  #     'submission_id' => 1062559,
+  #     'course_id' => 214,
+  #     'id' => 1273255,
+  #     'user_id' => 12057
+  #     # in the future:
+  #     'created_at' => '2017-08-10T15:03:05+0300'
+  # }}
+
   @@points_store = Hash.new
   @@update_times = Hash.new  # update times by course id
   UPDATE_INTERVAL = Rails.configuration.points_store_update_interval  # seconds

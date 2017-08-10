@@ -1,7 +1,8 @@
 Rails.application.routes.draw do
-  get '/cumulative-points', to: 'cumulative_points#cumulative_point_current'
-  get '/skill-percentages', to: 'mastery_percentages#skill_percentage_current'
   post '/new-dash-session', to: 'tokens#newtoken'
+
+  get '/cumulative-points/:course_id', to: 'cumulative_points#show'
+  get '/skill-percentages/:course_id', to: 'mastery_percentages#skill_percentage_current'
 
   get '/leaderboard/course/:course_id', to: 'leaderboards#get_range'
   get '/leaderboard/course/:course_id/all', to: 'leaderboards#get_all'

@@ -52,7 +52,7 @@ class CumulativePoint
     end
 
     daily_average = Hash.new
-    days = cumulative_points_by_day.keys()
+    days = user_counts_by_day.keys().sort()
     days.each do |day|
       points = cumulative_points_by_day[day]
       user_count = user_counts_by_day[day]
@@ -103,6 +103,7 @@ class CumulativePoint
 
   def cumulativize_points(points_by_day)
     days = points_by_day.keys
+    days.sort!
     cumulative_points_by_day = Hash.new
     cumulative_points_by_day[days[0]] = points_by_day[days[0]]
     i = 1
@@ -111,6 +112,7 @@ class CumulativePoint
       today = days[i]
       yesterday = days[i - 1]
       cumulative_points_by_day[today] = points_by_day[today] + cumulative_points_by_day[yesterday]
+      i += 1
     end
     return cumulative_points_by_day
   end

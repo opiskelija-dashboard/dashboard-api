@@ -1,0 +1,4 @@
+badge:
+  name: first badge
+  criteria: <%= BadgeChecker.new.get_current_user_points_count >= 1 %> 
+  course_id: 214

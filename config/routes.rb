@@ -8,5 +8,6 @@ Rails.application.routes.draw do
   get '/leaderboard/course/:course_id/whereis/:user_id', to: 'leaderboards#find_user'
   get '/leaderboard/course/:course_id/update', to: 'leaderboards#update_points'
 
+  get '/badges', to: 'badges#get_all_badges'
 
 end

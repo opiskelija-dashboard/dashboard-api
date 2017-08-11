@@ -86,7 +86,6 @@ class Token
     @tested = false
   end
 
-
   def username
     @username
   end

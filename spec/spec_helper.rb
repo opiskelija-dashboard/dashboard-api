@@ -101,6 +101,9 @@ end
 require 'rails_helper'
 require 'rspec-rails'
 
+# Comment this line below if you wish to see config warnings when running specs.
+#config.warnings = false
+
 RSpec.configure do |config|
   config.include ApiHelper
   config.include Requests::JsonHelpers

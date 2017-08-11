@@ -1,3 +1,7 @@
+# A helper to give "correct" jwt token to spec files.
+# Included in the spec_helper.rb - this is needed for our helper module to work.
+# Use this module with simply calling 'jwt_token' in a spec file.
+
 require 'jwt'
 
 module JwtTokenHelper 

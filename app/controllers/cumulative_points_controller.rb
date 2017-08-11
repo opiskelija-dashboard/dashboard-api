@@ -12,7 +12,10 @@ class CumulativePointsController < ApplicationController
     course_id = course_id.to_s
 
     cumulative_point = CumulativePoint.new(course_id, @token)
-    render json: { "data" => cumulative_point.day_point_objects,
-      "average" => cumulative_point.average }
+    render json: { "data" => {
+        "user" => cumulative_point.day_point_objects,
+        "average" => cumulative_point.average_points_by_day
+      }
+    }
   end
 end

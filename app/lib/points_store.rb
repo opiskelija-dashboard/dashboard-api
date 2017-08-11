@@ -16,13 +16,6 @@ class PointsStore
   @@update_times = Hash.new  # update times by course id
   UPDATE_INTERVAL = Rails.configuration.points_store_update_interval  # seconds
 
-  # def initialize
-  #   if ($global_points_store.nil?)
-  #     Rails.logger.debug("fffffffffffff $global_points_store was nil");
-  #     $global_points_store = Hash.new
-  #   end
-  # end
-
   def self.has_course_points?(course_id)
     course_points = @@points_store[course_id.to_s]
     return !course_points.nil?

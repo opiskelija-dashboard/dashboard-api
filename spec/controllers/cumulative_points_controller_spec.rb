@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'jwt'
 
 describe CumulativePointsController do
-  context 'when valid jwt token is given are given' do
+  context 'when valid jwt token is provided' do
 
     before do
       jwt_secret = Rails.configuration.jwt_secret
@@ -19,7 +19,6 @@ describe CumulativePointsController do
     end
 
     it 'responds with a 200 status' do
-      puts last_response.inspect
       expect(last_response.status).to eq 200
     end
 

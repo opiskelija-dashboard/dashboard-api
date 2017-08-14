@@ -9,8 +9,10 @@ class MasteryPercentage
   # set this from config/application.rb
   API_BASE_ADDRESS = 'http://secure-wave-81252.herokuapp.com/api/v8'
 
-  def initialize(token)
+  def initialize(course_id, token)
+    @course_id = course_id
     @token = token
+    @point_source = Rails.configuration.points_store_class == 'MockPointsStore' ? MockPointsStore : PointsStore
   end
 
   # Returns a hash of all exercises: key = id, value = available points.
@@ -79,16 +81,29 @@ class MasteryPercentage
   # Returns a hash of labels as keys and corresponding current user's points as values.
   def user_skills
     user_skill_points = {}
+
+    all_points = @point_source.course_points(@course_id)
+    user_points = Array.new
+    all_points.each do |raw_point|
+      user_points.push(raw_point) if raw_point["awarded_point"]["user_id"] = @token.user_id
+    end
+
     match_labels_with_available_points.each do | label, points |
-      user_skill_points[label] = (points.map {|point| point["id"]} & CumulativePoint.new(@token).user_points[0].map {|point| point.id})
+      #user_skill_points[label] = (points.map {|point| point["id"]} & CumulativePoint.new(@token).user_points[0].map {|point| point.id}) # stop long lines
+      #                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^ ffs people, really?
+      #  why use this unreadable functional style anyway, it just causes me headaches
+      user_skill_points[label] = (points.map {|point| point["id"]} & user_points.map {|point| point["awarded_point"]["id"]})
     end
     user_skill_points
   end
 
   # Returns a hash of labels as keys and corresponding number of awarded points as value.
+  #                   ^^^^^^ ??? what is "label" in this context
   def all_skills
     skill_points = {}
-    cp = CumulativePoint.new(@token).all_points[0].map {|point| point.id}
+    cp = @point_source.course_points(@course_id).map{|raw_point| raw_point["awarded_point"]["id"] }
+    #cp = CumulativePoint.new(course_id, @token).all_points[0].map {|point| point.id} # what is this even trying to do
+    #     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no no no no no
     match_labels_with_available_points.each do | label, points |
       hash = {}
 
@@ -114,7 +129,9 @@ class MasteryPercentage
   def label_average
     average = {}
     all_skills.each do | label, number_of_points |
-      average[label] = number_of_points.to_f / CumulativePoint.new(@token).all_points[1].count / match_labels_with_available_points[label].count
+      #average[label] = number_of_points.to_f / CumulativePoint.new(@token).all_points[1].count / match_labels_with_available_points[label].count # what a terribly long line. dont do this please
+      all_points_count = @point_source.course_points(@course_id).count
+      average[label] = number_of_points.to_f / all_points_count / match_labels_with_available_points[label].count
     end
     average
   end

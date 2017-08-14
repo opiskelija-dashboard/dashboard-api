@@ -1,4 +1,32 @@
-badge:
-  name: first badge
-  criteria: <%= BadgeChecker.new.get_current_user_points_count >= 1 %> 
-  course_id: 214
+# This is a configuration file for badges.
+# When you create new badges add them here.
+# Criteria field is an array of methods from app/models/badge_checker.rb.
+# Be sure to add new criteria there when needed.
+
+# When you add new criteria, be sure to update them below.
+  # Available criteria:
+  # user_has_one_point
+  # user_is_cool
+  # lol
+
+development: &development
+- badge:
+    name: first badge
+    criteria:
+      - user_has_one_point
+      - user_is_cool
+- badge:
+    name: second badge
+    criteria:
+      - lol
+- badge:
+    name: third badge
+    criteria:
+      - lol
+      - user_is_cool
+
+production:
+  <<: *development
+
+test:
+  <<: *development

@@ -49,5 +49,9 @@ module DashboardBackend
     #config.jwt_secret = "secret"
 
     config.jwt_verify_tmc_credentials = true
+
+    # For badges... Can we move these to another file?
+    config.badges = Rails.application.config_for(:badges)
+
   end
 end

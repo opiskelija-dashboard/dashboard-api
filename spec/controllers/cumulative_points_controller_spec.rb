@@ -7,7 +7,7 @@ describe CumulativePointsController do
     before do
       jwt_token
 
-      get '/cumulative-points'
+      get '/cumulative-points/course/214'
     end
 
     it 'responds with a 200 status' do

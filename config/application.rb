@@ -30,7 +30,7 @@ module DashboardBackend
     config.api_only = true
 
      # This will allow GET, POST or OPTIONS requests from any origin on any resource.
-    config.middleware.insert_before 0, "Rack::Cors" do
+    config.middleware.insert_before 0, Rack::Cors do
       allow do
         origins '*'
         resource '*', :headers => :any, :methods => [:get, :post, :options]

@@ -1,5 +1,6 @@
 # A mock PointsStore with fake data but no calls to external APIs
 class MockPointsStore
+  require 'date'
 
   # Format of raw_user_points elements:
   # { 'exercise_id' => 33235,
@@ -118,6 +119,11 @@ class MockPointsStore
       end
       t += 86400 # one day
     end
+
+    guaranteed_fake_point = fake_point(997, "01_20", 998, course_id, 999, 2, DateTime.new(2007, 01, 01, 12, 00, 00, '+3'))
+    # The guaranteed fake point: {"exercise_id"=>997, "awarded_point"=>{"name"=>"01_20", "submission_id"=>998, "course_id"=> course_id, "id"=>999, "user_id"=>2, "created_at"=>"2007-01-01T12:00:00+0300"}}
+    fake_points.push(guaranteed_fake_point)
+
     return fake_points
   end
 

@@ -2,6 +2,12 @@ class LeaderboardsController < ApplicationController
 
   @@leaderboards = Hash.new
 
+  def initialize()
+    # Typically, point_source would be PointsStore, but for testing purposes
+    # you might want to use MockPointsStore.
+    @point_source = Rails.configuration.points_store_class == 'MockPointsStore' ? MockPointsStore : PointsStore
+  end
+
   # GET /leaderboard/course/:course_id?from=:from&to=:to
   def get_range
     course_id = params["course_id"]
@@ -12,9 +18,12 @@ class LeaderboardsController < ApplicationController
 
     leaderboard = @@leaderboards[course_id]
     if (leaderboard.nil?)
-      Rails.logger.debug("@@leaderboards[" + course_id.inspect + "] was nil")
-      render json: {"data" => []}
-      return
+      if (recalculate_empty_leaderboard(course_id))
+        get_range # recurse
+      else
+        render json: {"data" => []}
+        return
+      end
     end
 
     interesting_subset = Array.new
@@ -34,9 +43,12 @@ class LeaderboardsController < ApplicationController
 
     leaderboard = @@leaderboards[course_id]
     if (leaderboard.nil?)
-      Rails.logger.debug("@@leaderboards[" + course_id.inspect + "] was nil")
-      render json: {"data" => []}
-      return
+      if (recalculate_empty_leaderboard(course_id))
+        get_all
+      else
+        render json: {"data" => []}
+        return
+      end
     else
       render json: {"data" => leaderboard}
       return
@@ -50,9 +62,12 @@ class LeaderboardsController < ApplicationController
 
     leaderboard = @@leaderboards[course_id]
     if (leaderboard.nil?)
-      Rails.logger.debug("@@leaderboards[" + course_id.inspect + "] was nil")
-      render json: {"data" => "not found: user_id " + user_id + " is not in course_id " + course_id }
-      return
+      if (recalculate_empty_leaderboard(course_id))
+        find_user
+      else
+        render json: {"data" => "not found: user_id " + user_id + " is not in course_id " + course_id }
+        return
+      end
     end
 
     searched_for = nil
@@ -83,15 +98,17 @@ class LeaderboardsController < ApplicationController
   def update_points
     course_id = params[:course_id].to_s
 
-    if (!PointsStore.course_point_update_needed?(course_id))
+    if (!@point_source.course_point_update_needed?(course_id))
       render json: { "data" => "Points of course " + course_id + " not updated because data isn't too old yet" }, status: 200 #ok
+      # We can still recalculate the leaderboard from data we already have.
+      recalculate_empty_leaderboard(course_id)
       return
     end
 
-    update_attempt = PointsStore.update_course_points(course_id, @token)
+    update_attempt = @point_source.update_course_points(course_id, @token)
 
     if (update_attempt[:success])
-      course_points = PointsStore.course_points(course_id)
+      course_points = @point_source.course_points(course_id)
       leaderboard = calculate_leaderboard(course_points)
       @@leaderboards[course_id] = leaderboard
       render json: { "data" => "OK, updated points of course " + course_id }, status: 200
@@ -107,6 +124,22 @@ class LeaderboardsController < ApplicationController
 
   private
 
+  def recalculate_empty_leaderboard(course_id)
+    Rails.logger.debug("@@leaderboards[" + course_id.inspect + "]: attempting recalculation")
+
+    course_points = @point_source.course_points(course_id)
+
+    unless (course_points.nil? || course_points.length == 0)
+      leaderboard = calculate_leaderboard(course_points)
+      @@leaderboards[course_id] = leaderboard
+      Rails.logger.debug("Recalculated @@leaderboards["+course_id.inspect+"]")
+      return true
+    else
+      Rails.logger.debug("Couldn't recalculate @@leaderboards["+course_id.inspect+"] as there is no point data in the point store")
+      return false
+    end
+  end
+
   def calculate_leaderboard(raw_course_points)
     # Format of raw_user_points elements:
     # { 'exercise_id' => 33235,
@@ -115,7 +148,8 @@ class LeaderboardsController < ApplicationController
     #     'submission_id' => 1062559,
     #     'course_id' => 214,
     #     'id' => 1273255,
-    #     'user_id' => 12057
+    #     'user_id' => 12057,
+    #     'created_at' => '2017-08-10T15:03:05+0300'
     # }}
     points_per_user = Hash.new
     raw_course_points.each do |h|

@@ -1,5 +1,5 @@
 class MasteryPercentagesController < ApplicationController
-  def skill_percentage_current
+  def show
     course_id = params["course_id"]
     if (course_id.nil?)
       render json: { "errors" => [
@@ -13,6 +13,6 @@ class MasteryPercentagesController < ApplicationController
     course_id = course_id.to_s
 
     @mastery_percentage = MasteryPercentage.new(course_id, @token)
-    render json: @mastery_percentage
+    render json: { 'skill_percentage' => @mastery_percentage.skill_percentage }
   end
 end

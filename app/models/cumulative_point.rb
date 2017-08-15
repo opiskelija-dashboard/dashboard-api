@@ -5,7 +5,6 @@ class CumulativePoint
 
     @course_id = course_id
     @token = token
-    Rails.logger.debug(@token.user_id)
 
     if (!@point_source.has_course_points?(@course_id))
       Rails.logger.debug("PointsStore didn't have points of course " + @course_id + ", fetching...");

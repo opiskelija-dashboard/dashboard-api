@@ -91,14 +91,14 @@ class LeaderboardsController < ApplicationController
   def find_current_user
     # User ID of the current user is passed around in the JWT token
     params["user_id"] = @token.user_id.to_s
-    # Have the other thing do the stuff
+    # Pass responsibility of finding the user to the other method.
     return find_user
   end
 
   def update_points
     course_id = params[:course_id].to_s
 
-    if (!@point_source.course_point_update_needed?(course_id))
+    unless (@point_source.course_point_update_needed?(course_id))
       render json: { "data" => "Points of course " + course_id + " not updated because data isn't too old yet" }, status: 200 #ok
       # We can still recalculate the leaderboard from data we already have.
       recalculate_empty_leaderboard(course_id)

@@ -29,10 +29,10 @@ describe MasteryPercentagesController do
       expect(result.class == Array).to be(true)
     end
 
-    it 'returns json with "label", "user" and "average" as sub-elements' do
+    it 'returns json with "label", "user" and "average" as sub-elem  ents' do
       expect(json['skill_percentage'].first["label"]).not_to be_nil
       expect(json['skill_percentage'].first["user"]).not_to be_nil
-      # fuck this line, the whole mastery percentage shit is a fucking trainwreck
+      # screw this line, the whole mastery percentage class is a trainwreck
       #expect(json['skill_percentage'].first["average"]).not_to be_nil
     end
 
@@ -46,10 +46,9 @@ describe MasteryPercentagesController do
       expect(result).to be(true)
     end
 
-    # fuck this test too
+    # screw this test too
     #it 'returns average points percentage correctly' do
-    #  result = json["skill_percentage"].first["average"].class == Float
-    #  expect(result).to be(true)
+    #  expect(json["skill_percentage"].first["average"].class == Float).to be(true)
     #end
   end
 

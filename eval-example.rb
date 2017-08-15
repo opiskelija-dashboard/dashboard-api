@@ -34,6 +34,7 @@ done_two_exercises = %q(
 
 # This imitates the badge definition configuration file.
 Badges = [
+	{ "badge_name" => "User ID is even", "badge_code" => 'user_id % 2 == 0'},
 	{ "badge_name" => "Done one exercise", "badge_code" => done_one_exercise },
 	{ "badge_name" => "Done two exercises", "badge_code" => done_two_exercises }
 	# ...

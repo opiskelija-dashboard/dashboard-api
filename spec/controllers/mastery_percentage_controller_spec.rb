@@ -7,7 +7,7 @@ describe MasteryPercentagesController do
     before do
       jwt_token
 
-      get '/skill-percentages'
+      get '/skill-percentages/course/214'
     end
 
     it 'responds with a 200 status' do

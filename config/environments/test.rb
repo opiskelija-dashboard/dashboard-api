@@ -41,6 +41,7 @@ Rails.application.configure do
   # config.action_view.raise_on_missing_translations = true
 
   config.jwt_secret = "secret"
-
   config.jwt_verify_tmc_credentials = false
+  config.points_store_class = "MockPointsStore"  # this won't connect to TMC
+  config.points_store_update_interval = 20       # seconds
 end

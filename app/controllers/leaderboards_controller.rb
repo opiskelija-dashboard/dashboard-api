@@ -1,30 +1,29 @@
 class LeaderboardsController < ApplicationController
 
-  @@raw_points = Hash.new
   @@leaderboards = Hash.new
 
-  # GET /leaderboards/course/:course_id?from=:from&to=:to
+  def initialize()
+    # Typically, point_source would be PointsStore, but for testing purposes
+    # you might want to use MockPointsStore.
+    @point_source = Rails.configuration.points_store_class == 'MockPointsStore' ? MockPointsStore : PointsStore
+  end
+
+  # GET /leaderboard/course/:course_id?from=:from&to=:to
   def get_range
     course_id = params["course_id"]
-    from = params["from"]
-    to = params["to"]
+    from = params["from"].nil? ? 1 : params["from"].to_i
+    to = params["to"].nil? ? 10 : params["to"].to_i
+    Rails.logger.debug("from: #{from}\tto: #{to}")
     # TODO: check that `from` and `to` are numbers and that `from` <= `to`
-    if (from.nil?)
-      from = 1
-    else
-      from = from.to_i
-    end
-    if (to.nil?)
-      to = 10
-    else
-      to = to.to_i
-    end
 
     leaderboard = @@leaderboards[course_id]
     if (leaderboard.nil?)
-      Rails.logger.debug("@@leaderboards[" + course_id.inspect + "] was nil")
-      render json: {"data" => []}
-      return
+      if (recalculate_empty_leaderboard(course_id))
+        get_range # recurse
+      else
+        render json: {"data" => []}
+        return
+      end
     end
 
     interesting_subset = Array.new
@@ -38,31 +37,37 @@ class LeaderboardsController < ApplicationController
     render json: { "data" => interesting_subset }
   end
 
-  # GET /leaderboards/course/:course_id/all
+  # GET /leaderboard/course/:course_id/all
   def get_all
     course_id = params["course_id"]
 
     leaderboard = @@leaderboards[course_id]
     if (leaderboard.nil?)
-      Rails.logger.debug("@@leaderboards[" + course_id.inspect + "] was nil")
-      render json: {"data" => []}
-      return
+      if (recalculate_empty_leaderboard(course_id))
+        get_all
+      else
+        render json: {"data" => []}
+        return
+      end
     else
       render json: {"data" => leaderboard}
       return
     end
   end
 
-  # GET /leaderbaords/course/:course_id/whereis/:user_id
+  # GET /leaderboard/course/:course_id/whereis/:user_id
   def find_user
     course_id = params["course_id"]
     user_id = params["user_id"]
 
     leaderboard = @@leaderboards[course_id]
     if (leaderboard.nil?)
-      Rails.logger.debug("@@leaderboards[" + course_id.inspect + "] was nil")
-      render json: {"data" => []}
-      return
+      if (recalculate_empty_leaderboard(course_id))
+        find_user
+      else
+        render json: {"data" => "not found: user_id " + user_id + " is not in course_id " + course_id }
+        return
+      end
     end
 
     searched_for = nil
@@ -82,52 +87,72 @@ class LeaderboardsController < ApplicationController
     end
   end
 
+  # GET /leaderboard/course/:courseid/whereis/current
+  def find_current_user
+    # User ID of the current user is passed around in the JWT token
+    params["user_id"] = @token.user_id.to_s
+    # Pass responsibility of finding the user to the other method.
+    return find_user
+  end
+
   def update_points
-    course_id = params[:course_id]
+    course_id = params[:course_id].to_s
 
-    endpoint = '/courses/' + course_id.to_s + '/points'
-    Rails.logger.debug("Fetching all points from " + endpoint + ", this may take a while")
-    response = HttpHelpers.tmc_api_get(endpoint, @token.tmc_token)
-
-    if (response[:success])
-      Rails.logger.debug("Done fetching")
-      @@raw_points[course_id.to_s] = response[:body]
-      calculate_leaderboard(course_id)
-      render json: { "data" => 'Fetched ' + course_id.to_s + ' OK' }
+    unless (@point_source.course_point_update_needed?(course_id))
+      render json: { "data" => "Points of course " + course_id + " not updated because data isn't too old yet" }, status: 200 #ok
+      # We can still recalculate the leaderboard from data we already have.
+      recalculate_empty_leaderboard(course_id)
       return
+    end
+
+    update_attempt = @point_source.update_course_points(course_id, @token)
+
+    if (update_attempt[:success])
+      course_points = @point_source.course_points(course_id)
+      leaderboard = calculate_leaderboard(course_points)
+      @@leaderboards[course_id] = leaderboard
+      render json: { "data" => "OK, updated points of course " + course_id }, status: 200
     else
-      Rails.logger.debug("Fetch didn't work; the response object: " + response.inspect)
-      render json: { "errors" =>
-        [{
-          "title" => "Unable to update leaderboard for course " + course_id.to_s,
-          "detail" => "Response from the TMC server: " + response.inspect
-        }]
-      }, status: 500
-      return
+      errors = update_attempt[:errors]
+      errors.push({
+        "title" => "Unable to update leaderboard for course " + course_id,
+        "detail" => "The update failed at the course-point-updating stage."
+      });
+      render json: { "errors" => errors }, status: 500 #server error
     end
   end
 
   private
 
-  def calculate_leaderboard(course_id)
-    raw = @@raw_points[course_id]
-    if (raw.nil?)
-      Rails.logger.debug("calculate_leaderboard(" + course_id.inspect + ") called, nothing in @@raw_points[" + course_id.inspect + "]")
-      return
+  def recalculate_empty_leaderboard(course_id)
+    Rails.logger.debug("@@leaderboards[" + course_id.inspect + "]: attempting recalculation")
+
+    course_points = @point_source.course_points(course_id)
+
+    unless (course_points.nil? || course_points.length == 0)
+      leaderboard = calculate_leaderboard(course_points)
+      @@leaderboards[course_id] = leaderboard
+      Rails.logger.debug("Recalculated @@leaderboards["+course_id.inspect+"]")
+      return true
+    else
+      Rails.logger.debug("Couldn't recalculate @@leaderboards["+course_id.inspect+"] as there is no point data in the point store")
+      return false
     end
+  end
 
-    output = ""
-
+  def calculate_leaderboard(raw_course_points)
+    # Format of raw_user_points elements:
+    # { 'exercise_id' => 33235,
+    #   'awarded_point' => {
+    #     'name' => '01-06',
+    #     'submission_id' => 1062559,
+    #     'course_id' => 214,
+    #     'id' => 1273255,
+    #     'user_id' => 12057,
+    #     'created_at' => '2017-08-10T15:03:05+0300'
+    # }}
     points_per_user = Hash.new
-    #{ 'exercise_id' => 33235,
-    #  'awarded_point' => {
-    #    'name' => '01-06',
-    #    'submission_id' => 1062559,
-    #    'course_id' => 214,
-    #    'id' => 1273255,
-    #    'user_id' => 12057
-    #} }
-    raw.each do |h|
+    raw_course_points.each do |h|
       exercise_id = h["exercise_id"]
       ap = h["awarded_point"]
       user_id = ap["user_id"]
@@ -139,11 +164,8 @@ class LeaderboardsController < ApplicationController
       points_per_user[user_id] += 1
     end
 
-    #output += points_per_user.inspect
-    #output += "\n\n"
-
-    # We want to transform our hash: { user1 => 4000, user2 => 3013, user3 => 5913, ...}
-    # into an array of arrays: [ [4000, user1], [3013, user2], [5913, user3], ...]
+    # We want to transform our hash: { user1 => 4000, user2 => 3013, ...}
+    # into an array of arrays: [ [4000, user1], [3013, user2], ...]
     # This is because Array#<=> does a columnwise comparison: when doing
     # [4000, user1] <=> [5913, user3], the first step is 4000 <=> 5913.
     point_user_tuples = Array.new
@@ -153,6 +175,7 @@ class LeaderboardsController < ApplicationController
     end
     point_user_tuples.sort! # sorts lowest points first
     point_user_tuples.reverse! # make highest points first
+    # Side effect: ranking of those with equal points is determined by user ID.
 
     # Now we transform our array of tuples into an array of hashes.
     max = point_user_tuples.length
@@ -166,7 +189,7 @@ class LeaderboardsController < ApplicationController
       i += 1
     end
 
-    @@leaderboards[course_id.to_s] = leaderboard
+    return leaderboard
   end
 
 end

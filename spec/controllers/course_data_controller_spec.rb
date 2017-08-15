@@ -45,7 +45,16 @@ describe CoursePointsController do
     it 'responds with a 401 Unauthorized status' do
       expect(last_response.status).to eq 401
     end
+  end
 
+  context 'when no JWT token is provided' do
+    before do
+      get '/course-points/900/update'
+    end
+
+    it 'responds with a 401 Unauthorized status' do
+      expect(last_response.status).to eq 401
+    end
   end
 
 end

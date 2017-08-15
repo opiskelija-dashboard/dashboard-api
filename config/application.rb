@@ -30,7 +30,7 @@ module DashboardBackend
     config.api_only = true
 
      # This will allow GET, POST or OPTIONS requests from any origin on any resource.
-    config.middleware.insert_before 0, "Rack::Cors" do
+    config.middleware.insert_before 0, Rack::Cors do
       allow do
         origins '*'
         resource '*', :headers => :any, :methods => [:get, :post, :options]
@@ -49,5 +49,16 @@ module DashboardBackend
     #config.jwt_secret = "secret"
 
     config.jwt_verify_tmc_credentials = true
+
+    # Use MockPointsStore for testing purposes, PointsStore for production.
+    # The difference is that MockPointsStore uses the Ruby random number
+    # generator and the current time to generate nonsense but correctly-
+    # formatted data, while PointsStore connects to a TMC server for real data.
+    # (This has to be a string because (Mock)?PointsStore hasn't been
+    # included yet and Rails'll complain and crash if this is a constant.)
+    config.points_store_class = "PointsStore"
+    # For testing, you might like to set this a few orders of magnitude
+    # smaller, especially if you use MockPointsStore as your point data source.
+    config.points_store_update_interval = 3600 # seconds
   end
 end

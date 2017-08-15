@@ -1,121 +1,127 @@
 class CumulativePoint
-  include ActiveModel::Serializers::JSON
 
-  #URLS - Change these to the correct ones when possible.
-  CURRENT_USER_POINTS_ENDPOINT = '/courses/:course_id/users/current/points'
-  ALL_USER_POINTS_ENDPOINT = '/courses/:course_id/points'
-  CURRENT_USER_SUBMISSIONS_ENDPOINT = '/courses/:course_id/users/current/submissions'
-  # set this from config/application.rb
-  API_BASE_ADDRESS = 'http://secure-wave-81252.herokuapp.com/api/v8'
+  def initialize(course_id, token)
+    @point_source = Rails.configuration.points_store_class == 'MockPointsStore' ? MockPointsStore : PointsStore
 
-  def initialize(token)
+    @course_id = course_id
     @token = token
+
+    if (!@point_source.has_course_points?(@course_id))
+      Rails.logger.debug("PointsStore didn't have points of course " + @course_id + ", fetching...");
+      @point_source.update_course_points(@course_id, token)
+    end
   end
 
-  # Returns an array of all points of user(s) and all user ids from url.
-  def get_points(endpoint)
-    points = []
-    user_ids = {}
+  # Returns an array of {"day" => ..., "points" => ...} hashes
+  def day_point_objects
+    user_points = users_own_points()
+    points_by_day = daywise_points(user_points)
+    cumulative_points_by_day = cumulativize_points(points_by_day)
+    return_data = Array.new
+    cumulative_points_by_day.each do |day, points|
+      return_data.push({"day" => day, "points" => points})
+    end
+    return return_data
+  end
 
-    # without the API_BASE_ADDRESS this will use Rails.configuration.tmc_api_base_address,
-    # like everything should
-    response = HttpHelpers.tmc_api_get(endpoint, @token.tmc_token, API_BASE_ADDRESS)
+  def average_points_by_day
+    all_points = all_course_points()
+    cumulative_points_by_day = cumulativize_points(daywise_points(all_points))
 
-    if response[:success]
-      response[:body].each do |point|
-        points << Point.new(point['awarded_point']['id'], point['awarded_point']['submission_id'])
-        user_ids[point['awarded_point']['user_id']] = 0
+    # To calculate the daily average of points submitted, we need not
+    # the count of how many users submitted that day, nor the cumulative
+    # count of user-IDs who have submitted so far, but the maximum amount
+    # of unique users who received points.
+    daybuckets = Hash.new
+    # First, we chuck the users who submitted points into day-buckets.
+    all_points.each do |raw_point|
+      day = raw_point["awarded_point"]["created_at"].to_date
+      user_id = raw_point["awarded_point"]["user_id"]
+      daybuckets[day] = Array.new if (daybuckets[day].nil?)
+      daybuckets[day].push(user_id)
+    end
+    # Then, we cumulate the day-buckets, so that the bucket of day N
+    # also contains the contents of day-bucket N-1.
+    # We use cumulativize_points because it does exactly what we want:
+    # just mentally do s/points/daybuckets/
+    daybuckets = cumulativize_points(daybuckets)
+    # Then, we sort and uniq all the day-buckets, and finally,
+    # we grab the size of each day-bucket.
+    user_counts_by_day = Hash.new
+    daybuckets.each do |day, bucket|
+      user_counts_by_day[day] = bucket.sort().uniq().length()
+    end
+
+    daily_average = Hash.new
+    days = user_counts_by_day.keys().sort()
+    days.each do |day|
+      points = cumulative_points_by_day[day]
+      user_count = user_counts_by_day[day]
+      if (user_count == 0)
+        daily_average[day] = 0
+      else
+        daily_average[day] = points / user_count
       end
     end
 
-    points_user_ids = []
-    points_user_ids << points
-    points_user_ids << user_ids
+    return daily_average
   end
 
-  def user_points
-    get_points(CURRENT_USER_POINTS_ENDPOINT)
+
+  private
+
+
+  def all_course_points
+    raw_points = @point_source.course_points(@course_id)
+    return raw_points
   end
 
-  def all_points
-    get_points(ALL_USER_POINTS_ENDPOINT)
-  end
+  def users_own_points
+    raw_points = @point_source.course_points(@course_id)
 
-  # Creates a hash of all the submissions of the user.
-  def get_submissions
-    submissions = {}
+    user_points = Array.new
+    current_user = @token.user_id
 
-    endpoint = CURRENT_USER_SUBMISSIONS_ENDPOINT
-
-    # without the API_BASE_ADDRESS this will use Rails.configuration.tmc_api_base_address,
-    # like everything should
-    response = HttpHelpers.tmc_api_get(endpoint, @token.tmc_token, API_BASE_ADDRESS)
-
-    if response[:success]
-      response[:body].each do |submission|
-        sub = Submission.new(submission['id'], submission['created_at'])
-        submissions[sub.id] = sub
-      end
-      submissions
+    raw_points.each do |raw_point|
+      point_content = raw_point["awarded_point"]
+      point_user = point_content["user_id"]
+      user_points.push(raw_point) if (point_user == current_user)
     end
+
+    return user_points
   end
 
-  # Returns hash: keys = days, values = points
-  def hash_for_days_and_points
-    points = user_points[0]
-    submissions = get_submissions
-
-    # Adds every submissions created_at to an array and sorts it.
-    days = []
-    points.each do |point|
-      days << submissions[point.submission_id].created_at.to_date
+  def daywise_points(raw_points)
+    points_by_day = Hash.new
+    raw_points.each do |raw_point|
+      point_content = raw_point["awarded_point"]
+      # Remove the following line once 'created_at' is in the TMC server
+      raw_point["awarded_point"]["created_at"] = "2007-07-14T14:51" if (raw_point["awarded_point"]["created_at"].nil?)
+      day = raw_point["awarded_point"]["created_at"].to_date
+      points_by_day[day] = 0 if (points_by_day[day].nil?)
+      points_by_day[day] += 1
     end
-    days = days.sort
-
-    # Change these to correspond to the correct TMC API earliest and latest submissions.
-    day = days.first
-
-    # Sets a hash with dates from first to last submission dates.
-    hash = {}
-    begin
-      hash["#{day}"] = 0
-      day += 1
-    end until day > days.last
-
-    # Adds the amount of submissions made to each day.
-    i = 0
-    begin
-      hash["#{days[i]}"] = hash["#{days[i]}"] + 1
-      i += 1
-    end until i == days.count
-
-    hash
+    return points_by_day
   end
 
-  # Returns days of the hash_for_days_and_points hash.
-  def days
-    hash_for_days_and_points.keys
-  end
+  def cumulativize_points(points_by_day)
+    if (points_by_day.nil? || points_by_day.length == 0)
+      return Hash.new
+    end
 
-  # Returns points
-  def points
-    hash = hash_for_days_and_points
-
-    points = []
-    points[0] = hash.values[0]
-
-    # Makes cumulative array of points from hash_for_days_and_points hash.
+    days = points_by_day.keys
+    days.sort!
+    cumulative_points_by_day = Hash.new
+    cumulative_points_by_day[days[0]] = points_by_day[days[0]]
     i = 1
-    begin
-      points[i] = points[i - 1] + hash.values[i]
+    max = days.length
+    while (i < max)
+      today = days[i]
+      yesterday = days[i - 1]
+      cumulative_points_by_day[today] = points_by_day[today] + cumulative_points_by_day[yesterday]
       i += 1
-    end until i == hash.length
-
-    points
+    end
+    return cumulative_points_by_day
   end
 
-  def average
-    points_and_users = all_points
-    (all_points[0].count / all_points[1].count.to_f).round(2)
-  end
 end

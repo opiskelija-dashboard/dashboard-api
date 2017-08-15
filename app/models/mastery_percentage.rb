@@ -1,16 +1,20 @@
 class MasteryPercentage
-  include ActiveModel::Serializers::JSON
 
   #URLS - Change these to the correct ones when possible.
+  # These do not exist in the TMC server yet; this is planning for the future.
   SKILLS_ENDPOINT = '/courses/:course_id/users/:user_id/skills'
-  EXERCISES_ENDPOINT = '/courses/:course_id/exercises'
   LABELED_EXERCISES_ENDPOINT = '/courses/:course_id/skills-raw'
+
+  # This does exist in the real TMC.
+  EXERCISES_ENDPOINT = '/courses/:course_id/exercises'
 
   # set this from config/application.rb
   API_BASE_ADDRESS = 'http://secure-wave-81252.herokuapp.com/api/v8'
 
-  def initialize(token)
+  def initialize(course_id, token)
+    @course_id = course_id
     @token = token
+    @point_source = Rails.configuration.points_store_class == 'MockPointsStore' ? MockPointsStore : PointsStore
   end
 
   # Returns a hash of all exercises: key = id, value = available points.
@@ -29,7 +33,7 @@ class MasteryPercentage
     end
   end
 
-  # Returns a hash of exercises by certain labels: key = label, value = array of exercises.
+  # Returns a hash of exercises by certain labels: key = skill-label, value = array of exercises.
   def get_exercises_by_labels(endpoint)
     exercises = {}
 
@@ -57,7 +61,7 @@ class MasteryPercentage
     intersect_ids
   end
 
-  # Returns a hash of available points corresponding labels.
+  # Returns a hash of available points corresponding skill-labels.
   def match_labels_with_available_points
     all_exercises = get_all_exercises(EXERCISES_ENDPOINT)
     intersect_ids = intersect_exercise_ids
@@ -76,19 +80,29 @@ class MasteryPercentage
     available_points
   end
 
-  # Returns a hash of labels as keys and corresponding current user's points as values.
+  # Returns a hash of skill-labels as keys and corresponding current user's points as values.
   def user_skills
     user_skill_points = {}
-    match_labels_with_available_points.each do | label, points |
-      user_skill_points[label] = (points.map {|point| point["id"]} & CumulativePoint.new(@token).user_points[0].map {|point| point.id})
+
+    all_points = @point_source.course_points(@course_id)
+    user_points = Array.new
+    all_points.each do |raw_point|
+      user_points.push(raw_point) if raw_point["awarded_point"]["user_id"] = @token.user_id
+    end
+
+    skilllabels_and_points = match_labels_with_available_points()
+    skilllabels_and_points.each do | skilllabel, points |
+      point_ids = points.map {|point| point["id"]}
+      user_point_ids = user_points.map {|point| point["awarded_point"]["id"]}
+      user_skill_points[skilllabel] = point_ids & user_point_ids
     end
     user_skill_points
   end
 
-  # Returns a hash of labels as keys and corresponding number of awarded points as value.
+  # Returns a hash of skill-labels as keys and corresponding number of awarded points as value.
   def all_skills
     skill_points = {}
-    cp = CumulativePoint.new(@token).all_points[0].map {|point| point.id}
+    cp = @point_source.course_points(@course_id).map{|raw_point| raw_point["awarded_point"]["id"] }
     match_labels_with_available_points.each do | label, points |
       hash = {}
 
@@ -101,7 +115,7 @@ class MasteryPercentage
     skill_points
   end
 
-  # Returns a hash of labels as keys and corresponding skill ratio as value.
+  # Returns a hash of skill-labels as keys and corresponding skill ratio as value.
   def user_skill_ratio
     skill_ratio = {}
     user_skills.each do | label, points |
@@ -110,19 +124,21 @@ class MasteryPercentage
     skill_ratio
   end
 
-  # Returns a hash of labels as keys and corresponding average number of points as value.
+  # Returns a hash of skill-labels as keys and corresponding average number of points as value.
   def label_average
     average = {}
     all_skills.each do | label, number_of_points |
-      average[label] = number_of_points.to_f / CumulativePoint.new(@token).all_points[1].count / match_labels_with_available_points[label].count
+      #average[label] = number_of_points.to_f / CumulativePoint.new(@token).all_points[1].count / match_labels_with_available_points[label].count # what a terribly long line. dont do this please
+      all_points_count = @point_source.course_points(@course_id).count
+      average[label] = number_of_points.to_f / all_points_count / match_labels_with_available_points[label].count
     end
     average
   end
 
-  # Returns array including: labels and corresponding final percentages (current user and all users).
+  # Returns array including: skill-labels and corresponding final percentages (current user and all users).
   def skill_percentage
     avg = label_average
-    labels = avg.keys
+    skilllabels = avg.keys
     all = avg.values
     current_user = user_skill_ratio.values
 
@@ -130,12 +146,12 @@ class MasteryPercentage
     i = 0
     begin
       partial = {}
-      partial["label"] = labels[i]
+      partial["label"] = skilllabels[i]
       partial["user"] = (current_user[i]*100).round(1)
       partial["average"] = (all[i]*100).round(1)
       percentages << partial
       i = i + 1
-    end until i == labels.count
+    end until i == skilllabels.count
     percentages
   end
 

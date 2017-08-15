@@ -46,7 +46,7 @@ module DashboardBackend
     six_digit_hex_string = "%06x" % Random::rand(65536 * 256)
     config.jwt_secret = six_digit_hex_string.upcase
 
-    config.jwt_secret = "secret"
+    #config.jwt_secret = "secret"
 
     config.jwt_verify_tmc_credentials = true
 

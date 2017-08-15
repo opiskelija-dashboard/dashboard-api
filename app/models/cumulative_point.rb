@@ -14,7 +14,7 @@ class CumulativePoint
 
   # Returns an array of {"day" => ..., "points" => ...} hashes
   def day_point_objects
-    user_points = PointsHelper.users_own_points(@point_source, @course_id, @token)
+    user_points = PointsHelper.users_own_points(@point_source, @course_id, @token.user_id)
     points_by_day = PointsHelper.daywise_points(user_points)
     cumulative_points_by_day = cumulativize_points(points_by_day)
     return_data = Array.new

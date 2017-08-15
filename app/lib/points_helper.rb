@@ -5,11 +5,11 @@ class PointsHelper
     return raw_points
   end
 
-  def self.users_own_points(point_source, course_id, token)
+  def self.users_own_points(point_source, course_id, user_id)
     raw_points = point_source.course_points(course_id)
 
     user_points = Array.new
-    current_user = token.user_id
+    current_user = user_id
 
     raw_points.each do |raw_point|
       point_content = raw_point["awarded_point"]

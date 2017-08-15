@@ -13,4 +13,7 @@ Rails.application.routes.draw do
 
   get '/badges', to: 'badges#get_all_badges'
 
+  get '/heatmap/courses/:course_id/all', to: 'heatmaps#get_all'
+  get '/heatmap/courses/:course_id/current-user', to: 'heatmaps#get_current_user'
+
 end

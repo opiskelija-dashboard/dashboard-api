@@ -60,4 +60,25 @@ describe CumulativePointsController do
     end
 
   end
+
+  context 'when invalid JWT token is provided' do
+    before do
+      jwt_secret = Rails.configuration.jwt_secret
+      jwt_hash_algo = 'HS256'
+      two_minutes_ago = Time.now.to_i - 120
+
+      token_body = {"tmcusr" => "username", "tmctok" => "243f6a8885a308d3", "tmcuid" => 2, "exp" => two_minutes_ago}
+      valid_jwt_token = JWT.encode(token_body, jwt_secret, jwt_hash_algo)
+      authstring = "Bearer " + valid_jwt_token
+
+      header "Authorization", authstring
+      get '/cumulative-points/course/900'
+    end
+
+    it 'responds with a 401 Unauthorized status' do
+      expect(last_response.status).to eq 401
+    end
+
+  end
+
 end

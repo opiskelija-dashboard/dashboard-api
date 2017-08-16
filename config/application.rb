@@ -56,10 +56,18 @@ module DashboardBackend
     # formatted data, while PointsStore connects to a TMC server for real data.
     # (This has to be a string because (Mock)?PointsStore hasn't been
     # included yet and Rails'll complain and crash if this is a constant.)
-    #config.points_store_class = "PointsStore"
-    config.points_store_class = "MockPointsStore"
+    config.points_store_class = "PointsStore"
+    #config.points_store_class = "MockPointsStore"
     # For testing, you might like to set this a few orders of magnitude
     # smaller, especially if you use MockPointsStore as your point data source.
     config.points_store_update_interval = 3600 # seconds
+
+
+    # Use MockBadges for testing purposes and Badges for production.
+    # MockBadges is a class that acts like a database model, but is hardcoded,
+    # while Badges is an actual database model. 
+
+    config.badge_class = "MockBadges"
+    #config.badge_class = "Badges" #Not implemented, do not use.
   end
 end

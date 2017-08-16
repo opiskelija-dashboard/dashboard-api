@@ -17,7 +17,7 @@ class BadgeChecker
   #end
   def initialize(course_id, token)
     @point_source = Rails.configuration.points_store_class == 'MockPointsStore' ? MockPointsStore : PointsStore
-
+    @badges = Rails.configuration.badge_class == "MockBadges" ? MockBadges : Badges
     @course_id = course_id
     @token = token
 
@@ -33,28 +33,26 @@ class BadgeChecker
 
   #returns a hash of unique user_ids in points
   def get_user_ids(all_points)
-    user_ids = {}
+    user_ids = []
     all_points.each do |point|
-      user_ids[point["awarded_point"]["user_id"]] = 0
+      user_ids << [point["awarded_point"]["user_id"]]
     end
-    return user_ids
+    return user_ids.uniq
   end
 
   # Checks which badges a user (user_id) is worthy of.
   def check()
     badges = get_badges
-    all_points = @point_source
     points = @point_source.course_points(@course_id)
     user_ids = get_user_ids(points)
     user_ids.each do |user_id|
       badges.each do |badge_definition|
-        binding = achievement_predication_environment(user_id, all_points)
+        binding = achievement_predication_environment(user_id, points)
         
         got_achievement = eval(badge_definition["criteria"], binding);
-
         if (got_achievement)
         # save to database here
-        puts("User " + user_id[0].to_s + " got achievement '" + badge_definition["name"] + "'");
+        puts ("User " + user_id.to_s + " got achievement '" + badge_definition["name"] + "'");
         end
       end  
     end
@@ -62,11 +60,7 @@ class BadgeChecker
   end
 
   def get_badges
-    badges = YAML.load(File.open(Rails.root / 'config' / 'badges.yml'))
-    return badges
-  end
-
-  def get_point_source
-    @point_source
+    #get badges here
+    @badges.all
   end
 end

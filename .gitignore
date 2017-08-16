@@ -1,5 +1,7 @@
 # This template is from: https://github.com/github/gitignore/blob/master/Rails.gitignore
 
+/postgres
+
 *.swp
 *.rbc
 capybara-*.html

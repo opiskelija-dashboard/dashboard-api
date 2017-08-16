@@ -1,0 +1,18 @@
+version: "2"
+services:
+  database:
+    image: postgres:9.6.3
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres/database:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: dashboard-db
+  backend:
+    image: testi:latest
+    ports:
+      - "3000:3000"
+    environment:
+      DB_URL: postgres://admin:admin@database:5432/dashboard-db

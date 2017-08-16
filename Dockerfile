@@ -1,13 +1,12 @@
-FROM ruby  
-ADD Gemfile /app/  
-ADD Gemfile.lock /app/  
-RUN apk --update add --virtual build-dependencies ruby-dev build-base && \  
-    gem install bundler --no-ri --no-rdoc && \
-    cd /app ; bundle install --without development test && \
-    apk del build-dependencies
-ADD . /app  
-RUN chown -R nobody:nogroup /app  
-USER nobody  
-ENV RACK_ENV production  
-EXPOSE 3000  
-WORKDIR /app  
+FROM ruby:2.3.1
+RUN apt-get update -qq && apt-get install -y build-essential libpq-dev nodejs
+RUN mkdir /app
+WORKDIR /app
+ADD Gemfile /app/Gemfile
+ADD Gemfile.lock /app/Gemfile.lock
+RUN bundle install
+ADD . /app
+
+EXPOSE 3000
+
+CMD ["rails", "s"]

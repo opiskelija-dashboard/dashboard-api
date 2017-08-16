@@ -5,7 +5,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./postgres/database:/var/lib/postgresql/data
+      - ../dashboard-postgres/database:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin

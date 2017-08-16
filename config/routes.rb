@@ -1,6 +1,8 @@
 Rails.application.routes.draw do
   post '/new-dash-session', to: 'tokens#newtoken'
 
+  get '/course-points/:course_id/update', to: 'course_points#update'
+
   get '/cumulative-points/course/:course_id', to: 'cumulative_points#show'
   # Maybe this should be called skill-mastery?
   get '/skill-percentages/course/:course_id', to: 'mastery_percentages#show'

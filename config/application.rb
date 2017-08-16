@@ -46,9 +46,9 @@ module DashboardBackend
     six_digit_hex_string = "%06x" % Random::rand(65536 * 256)
     config.jwt_secret = six_digit_hex_string.upcase
 
-    config.jwt_secret = "secret"
+    #config.jwt_secret = "secret"
 
-    config.jwt_verify_tmc_credentials = false
+    config.jwt_verify_tmc_credentials = true
 
     # Use MockPointsStore for testing purposes, PointsStore for production.
     # The difference is that MockPointsStore uses the Ruby random number

@@ -47,15 +47,12 @@ class CumulativePoint
     daybuckets = cumulativize_points(daybuckets)
     # Then, we sort and uniq all the day-buckets, and finally,
     # we grab the size of each day-bucket.
-    user_counts_by_day = Hash.new
-    daybuckets.each do |day, bucket|
-      user_counts_by_day[day] = bucket.sort().uniq().length()
-    end
+    user_counts_by_day = PointsHelper.unique_bucket_count(daybuckets)
 
     daily_average = Hash.new
     days = user_counts_by_day.keys().sort()
     days.each do |day|
-      points = cumulative_points_by_day[day]
+      points = cumulative_points_by_day[day].to_f
       user_count = user_counts_by_day[day]
       if (user_count == 0)
         daily_average[day] = 0

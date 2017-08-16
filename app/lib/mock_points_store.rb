@@ -21,8 +21,11 @@ class MockPointsStore
   # Return false if the course's points haven't been "updated" yet.
   def self.has_course_points?(course_id)
     cid = course_id.to_s
-    @fake_points[cid] = Array.new if (@fake_points[cid].nil?)
-    return @fake_points[cid]
+    if (@fake_points[cid].nil?)
+      @fake_points[cid] = Array.new
+      return false
+    end
+    return true
   end
 
   def self.course_points(course_id)

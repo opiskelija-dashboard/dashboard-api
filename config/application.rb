@@ -50,7 +50,7 @@ module DashboardBackend
 
     config.jwt_verify_tmc_credentials = true
 
-    # For badges... Can we move these to another file?
+    # For badges... Can we move these to another file? Remove if not used any longer.
     config.badges = Rails.application.config_for(:badges)
 
     # Use MockPointsStore for testing purposes, PointsStore for production.

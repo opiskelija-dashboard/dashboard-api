@@ -3,30 +3,21 @@
 # Criteria field is an array of methods from app/models/badge_checker.rb.
 # Be sure to add new criteria there when needed.
 
-# When you add new criteria, be sure to update them below.
-  # Available criteria:
-  # user_has_one_point
-  # user_is_cool
-  # lol
+#development: &development
+# In criteria, use these to create to create either a single or multi line string
+# | for multi line string
+# > for single line string
 
-development: &development
-- badge:
-    name: first badge
-    criteria:
-      - user_has_one_point
-      - user_is_cool
-- badge:
-    name: second badge
-    criteria:
-      - lol
-- badge:
-    name: third badge
-    criteria:
-      - lol
-      - user_is_cool
+- badge: one plus one
+  name: one point received
+  criteria: 2 > 1
+  
+#- badge: 20 points received
+  #name: third badge
+  #criteria: 3 + 3 >= 6
 
-production:
-  <<: *development
+#production:
+#  <<: *development
 
-test:
-  <<: *development
+#test:
+#  <<: *development

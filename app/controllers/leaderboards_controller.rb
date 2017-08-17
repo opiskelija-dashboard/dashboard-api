@@ -82,7 +82,6 @@ class LeaderboardsController < ApplicationController
     else
       render json: { data: [searched_for] }
     end
-    return
   end
 
   # GET /leaderboard/course/:courseid/whereis/current

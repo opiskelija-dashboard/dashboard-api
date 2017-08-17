@@ -63,11 +63,11 @@ module DashboardBackend
     config.points_store_update_interval = 3600 # seconds
 
 
-    # Use MockBadges for testing purposes and Badges for production.
-    # MockBadges is a class that acts like a database model, but is hardcoded,
-    # while Badges is an actual database model. 
+    # Use MockBadgeStore for testing purposes and BadgeStore for production.
+    # MockBadgeStore is a class that acts like it returns info from a database,
+    # while BadgeStore returns actual database info. 
 
-    config.badge_class = "MockBadges"
-    #config.badge_class = "Badges" #Not implemented, do not use.
+    config.badge_store_class = "MockBadgeStore"
+    #config.badge_store_class = "Badgestore" #Not implemented, do not use.
   end
 end

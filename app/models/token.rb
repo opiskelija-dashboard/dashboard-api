@@ -10,7 +10,7 @@ class Token
     @errors = Array.new
     @invalidated = true
     @tested = false
-    @expires = Time.now + 600
+    @expires = Time.at 0
     @username = ""
     @tmc_token = ""
     @tmc_user_id = -1

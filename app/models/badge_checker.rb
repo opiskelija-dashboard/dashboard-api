@@ -17,7 +17,7 @@ class BadgeChecker
   #end
   def initialize(course_id, token)
     @point_source = Rails.configuration.points_store_class == 'MockPointsStore' ? MockPointsStore : PointsStore
-    @badges = Rails.configuration.badge_class == "MockBadges" ? MockBadges : Badges
+    @badges = Rails.configuration.badge_store_class == "MockBadgeStore" ? MockBadgeStore : BadgeStore
     @course_id = course_id
     @token = token
 
@@ -31,20 +31,11 @@ class BadgeChecker
     return binding()
   end
 
-  #returns a hash of unique user_ids in points
-  def get_user_ids(all_points)
-    user_ids = []
-    all_points.each do |point|
-      user_ids << [point["awarded_point"]["user_id"]]
-    end
-    return user_ids.uniq
-  end
-
   # Checks which badges a user (user_id) is worthy of.
-  def check()
-    badges = get_badges
+  def check
+    badges = @badges.get_badges_with_course_id(@course_id)
     points = @point_source.course_points(@course_id)
-    user_ids = get_user_ids(points)
+    user_ids = PointsHelper.user_ids_in_points(points)
     user_ids.each do |user_id|
       badges.each do |badge_definition|
         binding = achievement_predication_environment(user_id, points)
@@ -59,8 +50,4 @@ class BadgeChecker
     return nil
   end
 
-  def get_badges
-    #get badges here
-    @badges.all
-  end
 end

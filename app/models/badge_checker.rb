@@ -33,7 +33,7 @@ class BadgeChecker
 
   # Checks which badges a user (user_id) is worthy of.
   def check
-    badges = @badges.get_badges_with_course_id(@course_id)
+    badges = @badges.get_badges_with_course_id(@course_id, true)
     points = @point_source.course_points(@course_id)
     user_ids = PointsHelper.user_ids_in_points(points)
     user_ids.each do |user_id|

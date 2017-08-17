@@ -16,20 +16,41 @@ class MockBadgeStore
     return @course_badges
   end
   
-  def self.get_badges_with_course_id(course_id)
+  def self.get_badges_with_course_id(course_id, active_only)
     all_badges = get_all_badges
     course_badges = get_course_badges
     badges_with_course_id = []
     course_badges.each do |course_badge|
       all_badges.each do |raw_badge|
         if course_badge["badge_name"] == raw_badge["name"] && course_badge["course_id"] == course_id
-          badges_with_course_id << raw_badge   
+          if active_only = true && raw_badge["active"] == true
+            badges_with_course_id << raw_badge
+          elsif active_only = false
+            badges_with_course_id << raw_badge
+          end   
         end
       end
     end
     badges_with_course_id
   end
-  
+
+  def self.get_all_badges(active_only)
+    all_badges = get_all_badges
+    course_badges = get_course_badges
+    badges = []
+    course_badges.each do |course_badge|
+      all_badges.each do |raw_badge|
+        if course_badge["badge_name"] == raw_badge["name"]
+          if active_only = true && raw_badge["active"] == true
+            badges << raw_badge
+          elsif active_only = false
+            badges << raw_badge
+          end   
+        end
+      end
+    end
+    badges_with_course_id
+  end
 
   @badges = [
   { "name" => "test2",
@@ -64,7 +85,7 @@ class MockBadgeStore
   { "badge_name" => "test2",
   "course_id" => 214
   },{ "badge_name" => "freepoint",
-  "course_id" => 215
+  "course_id" => 214
   }]
 
 end

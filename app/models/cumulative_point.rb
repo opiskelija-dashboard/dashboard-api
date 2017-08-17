@@ -14,8 +14,8 @@ class CumulativePoint
 
   # Returns an array of {"day" => ..., "points" => ...} hashes
   def day_point_objects
-    user_points = users_own_points()
-    points_by_day = daywise_points(user_points)
+    user_points = PointsHelper.users_own_points(@point_source, @course_id, @token.user_id)
+    points_by_day = PointsHelper.daywise_points(user_points)
     cumulative_points_by_day = cumulativize_points(points_by_day)
     return_data = Array.new
     cumulative_points_by_day.each do |day, points|
@@ -25,8 +25,8 @@ class CumulativePoint
   end
 
   def average_points_by_day
-    all_points = all_course_points()
-    cumulative_points_by_day = cumulativize_points(daywise_points(all_points))
+    all_points = PointsHelper.all_course_points(@point_source, @course_id)
+    cumulative_points_by_day = cumulativize_points(PointsHelper.daywise_points(all_points))
 
     # To calculate the daily average of points submitted, we need not
     # the count of how many users submitted that day, nor the cumulative
@@ -47,15 +47,12 @@ class CumulativePoint
     daybuckets = cumulativize_points(daybuckets)
     # Then, we sort and uniq all the day-buckets, and finally,
     # we grab the size of each day-bucket.
-    user_counts_by_day = Hash.new
-    daybuckets.each do |day, bucket|
-      user_counts_by_day[day] = bucket.sort().uniq().length()
-    end
+    user_counts_by_day = PointsHelper.unique_bucket_count(daybuckets)
 
     daily_average = Hash.new
     days = user_counts_by_day.keys().sort()
     days.each do |day|
-      points = cumulative_points_by_day[day]
+      points = cumulative_points_by_day[day].to_f
       user_count = user_counts_by_day[day]
       if (user_count == 0)
         daily_average[day] = 0
@@ -69,40 +66,6 @@ class CumulativePoint
 
 
   private
-
-
-  def all_course_points
-    raw_points = @point_source.course_points(@course_id)
-    return raw_points
-  end
-
-  def users_own_points
-    raw_points = @point_source.course_points(@course_id)
-
-    user_points = Array.new
-    current_user = @token.user_id
-
-    raw_points.each do |raw_point|
-      point_content = raw_point["awarded_point"]
-      point_user = point_content["user_id"]
-      user_points.push(raw_point) if (point_user == current_user)
-    end
-
-    return user_points
-  end
-
-  def daywise_points(raw_points)
-    points_by_day = Hash.new
-    raw_points.each do |raw_point|
-      point_content = raw_point["awarded_point"]
-      # Remove the following line once 'created_at' is in the TMC server
-      raw_point["awarded_point"]["created_at"] = "2007-07-14T14:51" if (raw_point["awarded_point"]["created_at"].nil?)
-      day = raw_point["awarded_point"]["created_at"].to_date
-      points_by_day[day] = 0 if (points_by_day[day].nil?)
-      points_by_day[day] += 1
-    end
-    return points_by_day
-  end
 
   def cumulativize_points(points_by_day)
     if (points_by_day.nil? || points_by_day.length == 0)

@@ -22,41 +22,24 @@ describe CumulativePointsController do
       expect(last_response.status).to eq 200
     end
 
-    it 'returns json with "data" as the top element and "user" and "average" as sub-elements' do
-      #puts json.inspect
+    it 'returns json with "data" as the top element and "day", "point" and "average" as sub-elements' do
       expect(json["data"]).not_to be_nil
-      expect(json["data"]["user"]).not_to be_nil
-      expect(json["data"]["average"]).not_to be_nil
+      expect(json["data"][0]["day"]).not_to be_nil
+      expect(json["data"][0]["points"]).not_to be_nil
+      expect(json["data"][0]["average"]).not_to be_nil
     end
 
     it 'returns user-specific data' do
-      expect(json["data"]["user"].class == Array).to be(true)
+      expect(json["data"].class == Array).to be(true)
       # We know there is at least one point with UID=2, hence there must be
       # at least one point in here.
-      expect(json["data"]["user"].count > 0).to be(true)
+      expect(json["data"].count > 0).to be(true)
     end
 
-    it 'returns well-formed user-specific data' do
-      expect(json["data"]["user"][0]).not_to be_nil
-      expect(json["data"]["user"][0]["day"]).not_to be_nil
-      expect(json["data"]["user"][0]["points"]).not_to be_nil
-    end
-
-    it 'returns averages' do
-      expect(json["data"]["average"]).not_to be_nil
-      expect(json["data"]["average"].class == Hash).to be(true)
-      expect(json["data"]["average"].length > 0).to be(true)
-    end
-
-    it 'returns well-formed average data' do
-      keys = json["data"]["average"].keys
-      expect(json["data"]["average"][keys[0]]).not_to be_nil
-    end
-
-    it 'returns average data with Y-M-D dates as keys' do
+    it 'returns day in form of Y-M-D dates' do
       # String =~ Regexp returns nil if there's no match,
       # index of start of match if there is a match.
-      expect(json["data"]["average"].keys[0] =~ /^\d\d\d\d-\d\d-\d\d/).not_to be_nil
+      expect(json["data"][0]["day"] =~ /^\d\d\d\d-\d\d-\d\d/).not_to be_nil
     end
 
   end

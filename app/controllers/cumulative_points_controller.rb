@@ -5,7 +5,7 @@ class CumulativePointsController < ApplicationController
       render json: { "errors" => [
           {
             "title" => "Missing required course_id",
-            "detail" => "Request address must be of the corm /cumulative-points/<course-id>, where <course-id> is the ID code of a TMC course."
+            "detail" => "Request address must be of the corm /cumulative-points/course/<course_id>, where <course-id> is the ID code of a TMC course."
           }
         ]
       }, status: 400 # bad request

@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   post '/new-dash-session', to: 'tokens#newtoken'
+  get '/is-admin', to: 'admin#is_admin'
 
   get '/course-points/:course_id/update', to: 'course_points#update'
 

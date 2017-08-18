@@ -10,7 +10,7 @@ describe LeaderboardsController do
       tomorrow = Time.now.to_i + 86400
       # tmcuid=2 is guaranteed to show up when using MockPointsStore
       # tmctok is meaningless here, it's just the hex expansion of pi
-      token_body = {"tmcusr" => "username", "tmctok" => "243f6a8885a308d3", "tmcuid" => 2, "exp" => tomorrow}
+      token_body = {"tmcusr" => "username", "tmctok" => "243f6a8885a308d3", "tmcuid" => 2, "tmcadm" => false, "exp" => tomorrow}
       valid_jwt_token = JWT.encode(token_body, jwt_secret, jwt_hash_algo)
       authstring = "Bearer " + valid_jwt_token
 
@@ -45,7 +45,7 @@ describe LeaderboardsController do
       jwt_hash_algo = 'HS256'
       two_minutes_ago = Time.now.to_i - 120
 
-      token_body = {"tmcusr" => "username", "tmctok" => "243f6a8885a308d3", "tmcuid" => 2, "exp" => two_minutes_ago}
+      token_body = {"tmcusr" => "username", "tmctok" => "243f6a8885a308d3", "tmcuid" => 2, "tmcadm" => false, "exp" => two_minutes_ago}
       valid_jwt_token = JWT.encode(token_body, jwt_secret, jwt_hash_algo)
       authstring = "Bearer " + valid_jwt_token
 

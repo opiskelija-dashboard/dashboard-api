@@ -10,6 +10,31 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170802115559) do
+ActiveRecord::Schema.define(version: 20170818082051) do
+
+  create_table "awarded_badges", force: :cascade do |t|
+    t.integer  "badge_definition_id"
+    t.integer  "user_id"
+    t.integer  "course_id"
+    t.datetime "created_at",          null: false
+    t.datetime "updated_at",          null: false
+  end
+
+  create_table "badge_definitions", force: :cascade do |t|
+    t.string   "name"
+    t.string   "criteria"
+    t.boolean  "global"
+    t.boolean  "course_specific"
+    t.boolean  "active"
+    t.datetime "created_at",      null: false
+    t.datetime "updated_at",      null: false
+  end
+
+  create_table "course_badges", force: :cascade do |t|
+    t.integer  "badge_definition_id"
+    t.integer  "course_id"
+    t.datetime "created_at",          null: false
+    t.datetime "updated_at",          null: false
+  end
 
 end

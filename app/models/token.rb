@@ -1,41 +1,47 @@
-class Token
-  require 'jwt'
+require 'jwt'
 
+class Token
+  
   JWT_HASH_ALGO = 'HS256'
+<<<<<<< HEAD
   @@jwt_secret = Rails.configuration.jwt_secret
   @@verify_tmc_creds = Rails.configuration.jwt_verify_tmc_credentials
 
+=======
+  @@jwt_secret = Rails.configuration.jwt_secret;
+  @@verify_tmc_creds = Rails.configuration.jwt_verify_tmc_credentials;
+  
+>>>>>>> badgeEndPoint
   def initialize
     @errors = Array.new
     @invalidated = true
     @tested = false
-    @expires = 0
+    @expires = Time.at 0
     @username = ""
     @tmc_token = ""
     @tmc_user_id = -1
     @is_tmc_admin = false
     @jwt = ""
   end
-
+  
   def self.new_from_credentials(username, tmc_access_token)
     token = Token.new
     token.initialize_from_credentials(username, tmc_access_token)
     return token
   end
-
+  
   def self.new_from_jwt_string(jwt)
     token = Token.new
     token.initialize_from_jwt_string(jwt)
     return token
   end
-
+  
   def initialize_from_credentials(username, tmc_access_token, verify_creds = @@verify_tmc_creds)
     @username = username
     @tmc_token = tmc_access_token
     @expires = Time.now + 86400
     @tested = false
     @invalidated = false
-
     if (verify_creds)
       verification_result = verify_given_credentials(@username, @tmc_token)
       @tested = true  # We tested it. Whether it's valid is a different matter.
@@ -80,16 +86,16 @@ class Token
       @invalidated = self.expired?
       @tested = @@verify_tmc_creds
     end
-  rescue JWT::VerificationError
-    error = {
-      "title" => "Token verification error",
-      "detail" => "The token is invalid, corrupt, or maliciously created, as it does not pass signature verification.",
-    }
-    @errors.push(error)
-    @invalidated = true
-    @tested = false
-  rescue JWT::DecodeError
-    error = {
+    rescue JWT::VerificationError
+      error = {
+        "title" => "Token verification error",
+        "detail" => "The token is invalid, corrupt, or maliciously created, as it does not pass signature verification.",
+      }
+      @errors.push(error)
+      @invalidated = true
+      @tested = false
+    rescue JWT::DecodeError
+      error = {
       "title" => "Malformed token",
       "detail" => "The JWT token given is incorrectly formed and cannot be decoded.",
     }
@@ -168,8 +174,8 @@ class Token
     expired = (now <=> exp) > 0
     if (expired)
       error = {
-        :title => "Expired JWT token",
-        :detail => "The expiration time specified in the JWT token body has elapsed."
+      :title => "Expired JWT token",
+      :detail => "The expiration time specified in the JWT token body has elapsed."
       }
       # Let's not push a new identical error on the error pile.
       unless (@errors.include?(error))

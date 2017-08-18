@@ -62,4 +62,13 @@ class PointsHelper
     return ubc
   end
 
+  # Returns an array of unique user_ids in given points.
+  def self.user_ids_in_points(raw_points)
+    user_ids = []
+    raw_points.each do |point|
+      user_ids << point["awarded_point"]["user_id"]
+    end
+    user_ids.uniq
+  end
+
 end

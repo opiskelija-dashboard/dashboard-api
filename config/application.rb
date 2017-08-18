@@ -57,8 +57,17 @@ module DashboardBackend
     # (This has to be a string because (Mock)?PointsStore hasn't been
     # included yet and Rails'll complain and crash if this is a constant.)
     config.points_store_class = "PointsStore"
+    #config.points_store_class = "MockPointsStore"
     # For testing, you might like to set this a few orders of magnitude
     # smaller, especially if you use MockPointsStore as your point data source.
     config.points_store_update_interval = 3600 # seconds
+
+
+    # Use MockBadgeStore for testing purposes and BadgeStore for production.
+    # MockBadgeStore is a class that acts like it returns info from a database,
+    # while BadgeStore returns actual database info. 
+
+    config.badge_store_class = "MockBadgeStore"
+    #config.badge_store_class = "Badgestore" #Not fully implemented.
   end
 end

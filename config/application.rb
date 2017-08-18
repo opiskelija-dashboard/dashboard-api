@@ -68,6 +68,6 @@ module DashboardBackend
     # while BadgeStore returns actual database info. 
 
     config.badge_store_class = "MockBadgeStore"
-    #config.badge_store_class = "Badgestore" #Not implemented, do not use.
+    #config.badge_store_class = "Badgestore" #Not fully implemented.
   end
 end

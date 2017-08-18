@@ -8,7 +8,7 @@ class MockBadgeStore
     #nothing here either
   end
   
-  def self.get_all_badges
+  def self.return_badges
     return @badges
   end
   
@@ -17,15 +17,15 @@ class MockBadgeStore
   end
   
   def self.get_badges_with_course_id(course_id, active_only)
-    all_badges = get_all_badges
+    all_badges = return_badges
     course_badges = get_course_badges
     badges_with_course_id = []
     course_badges.each do |course_badge|
       all_badges.each do |raw_badge|
         if course_badge["badge_name"] == raw_badge["name"] && course_badge["course_id"] == course_id
-          if active_only = true && raw_badge["active"] == true
+          if active_only && raw_badge["active"] == true
             badges_with_course_id << raw_badge
-          elsif active_only = false
+          elsif active_only == false
             badges_with_course_id << raw_badge
           end   
         end
@@ -35,7 +35,7 @@ class MockBadgeStore
   end
 
   def self.get_all_badges(active_only)
-    all_badges = get_all_badges
+    all_badges = return_badges
     course_badges = get_course_badges
     badges = []
     course_badges.each do |course_badge|

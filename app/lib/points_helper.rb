@@ -66,7 +66,7 @@ class PointsHelper
   def self.user_ids_in_points(raw_points)
     user_ids = []
     raw_points.each do |point|
-      user_ids << [point["awarded_point"]["user_id"]]
+      user_ids << point["awarded_point"]["user_id"]
     end
     user_ids.uniq
   end

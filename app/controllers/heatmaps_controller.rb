@@ -1,40 +1,40 @@
 class HeatmapsController < ApplicationController
-  
-  def initialize()
-    @point_source = Rails.configuration.points_store_class == 'MockPointsStore' ? MockPointsStore : PointsStore
-  end
 
   # GET /heatmap/courses/:course_id/all
-  def get_all
-    course_id = params["course_id"].to_s
-    update_points_source_if_necessary(course_id, @token)
-    everyones_points = PointsHelper.all_course_points(@point_source, course_id)
-    points_by_day = PointsHelper.daywise_points(everyones_points)
-    unique_users_per_week = PointsHelper.unique_users_per_week(everyones_points)
-
-    daily_average = Hash.new
-    points_by_day.each do |day, points|
-      week = Date.iso8601(day.to_s).strftime("%G-W%V")
-      users_this_week = unique_users_per_week[week].to_f
-      Rails.logger.debug("Day " + day.to_s + ", week " + week.to_s + ", points today " + points.to_s + ", users this week " + users_this_week.to_s)
-      if (users_this_week == 0)
-        avg = 0
-      else
-        avg = points / users_this_week
-      end
-      daily_average[day] = avg
+  def get_everyones_points_average
+    course_id = params["course_id"]
+    if (course_id.nil?)
+      render json: { "errors" => [
+          {
+            "title" => "Missing required course_id",
+            "detail" => "Request address must be of the corm /heatmap/courses/<course_id>/all, where <course-id> is the ID code of a TMC course."
+          }
+        ]
+      }, status: 400 # bad request
     end
 
-    render json: { "data" => daily_average }
+    course_id = course_id.to_s
+    heatmap_for_everyone = Heatmap.new(course_id, @token)
+    render json: { "data" => heatmap_for_everyone.get_everyones_points_average }
   end
+    
 
   # GET /heatmap/courses/:course_id/current-user
   def get_current_user
-    course_id = params["course_id"].to_s
-    update_points_source_if_necessary(course_id, @token)
-    current_users_points = PointsHelper.users_own_points(@point_source, course_id, @token.user_id)
-    points_by_day = PointsHelper.daywise_points(current_users_points)
-    render json: { "data" => points_by_day }
+    course_id = params["course_id"]
+    if (course_id.nil?)
+      render json: { "errors" => [
+          {
+            "title" => "Missing required course_id",
+            "detail" => "Request address must be of the corm /heatmap/courses/<course_id>/current-user, where <course-id> is the ID code of a TMC course."
+          }
+        ]
+      }, status: 400 # bad request
+    end
+
+    course_id = course_id.to_s
+    heatmap_for_current_user = Heatmap.new(course_id, @token)
+    render json: { "data" => heatmap_for_current_user.get_current_user }
   end
 
   private

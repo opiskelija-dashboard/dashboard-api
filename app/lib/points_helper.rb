@@ -105,6 +105,7 @@ class PointsHelper
     return users_in_array
   end
 
+  # TODO: comment this 
   def self.cumulativize(data)
     if (data.nil? || data.length == 0)
       return Hash.new

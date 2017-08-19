@@ -52,7 +52,7 @@ class CumulativePoint
       PointsHelper.daywise_points(@raw_everyones_points)
   end
 
-  # Uses @raw_points and initialize hashes of unique users 
+  # Uses @raw_points and initialize hashes of unique users
   # to instance variables
   def init_unique_users_count_by_day
     all_unique_users = PointsHelper.unique_users_globally(@raw_everyones_points)
@@ -82,8 +82,8 @@ class CumulativePoint
   end
 
   # Loops instance variable @everyones_cumulative_points_by_day and
-  # OUTPUTs hash 
-  #   { 
+  # OUTPUTs hash based on it's information
+  #   {
   #     "date" => date,
   #     "users_points" => users_points,
   #     "everyones_average" => everyones_average
@@ -104,5 +104,4 @@ class CumulativePoint
     end
     return_data
   end
-
 end

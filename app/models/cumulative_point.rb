@@ -1,5 +1,5 @@
-# Class initializes Cumulative point with injected course_id and jwt-token
-# (which offers logged in user_id)
+# Class initializes Cumulative point with inputs: course_id and jwt-token,
+# which offers logged in user_id
 # Method day_point_objects returns an array for frontend purposes
 # with data {"date", "user's points", "average"}
 class CumulativePoint
@@ -20,38 +20,24 @@ class CumulativePoint
   # Returns an array of
   # {"day" => ..., "points" => ..., "average" => ...} hashes
   def day_point_objects
-    users_points =
-      PointsHelper.users_own_points(@point_source, @course_id, @token.user_id)
-    everyones_points =
-      PointsHelper.all_course_points(@point_source, @course_id)
-
-    users_points_by_day = PointsHelper.daywise_points(users_points)
-    everyones_points_by_day = PointsHelper.daywise_points(everyones_points)
-
-    all_unique_users = PointsHelper.unique_users_globally(everyones_points)
-    unique_users_count_by_day =
-      PointsHelper.new_unique_users_per_day(everyones_points,
-                                            all_unique_users)
-
-    everyones_cumulative_points_by_day =
-      PointsHelper.cumulativize(everyones_points_by_day)
-    cumulative_unique_users_count_by_day =
-      PointsHelper.cumulativize(unique_users_count_by_day)
+    init_raw_points
+    init_daywise_points
+    init_unique_users_count_by_day
+    init_cumulative_arrays
 
     return_data = []
-
     i = 0
     users_points = 0
 
-    everyones_cumulative_points_by_day.each do |day, points|
-      if users_points_by_day[day].nil?
-        users_points_increment = 0
-      else users_points_increment = users_points_by_day[day]
-      end
+    @everyones_cumulative_points_by_day.each do |day, points|
+      users_points_increment = if @users_points_by_day[day].nil?
+                                 0
+                               else @users_points_by_day[day]
+                               end
 
-      unique_users_count = if cumulative_unique_users_count_by_day[day].nil?
+      unique_users_count = if @cumulative_unique_users_count_by_day[day].nil?
                              0
-                           else cumulative_unique_users_count_by_day[day]
+                           else @cumulative_unique_users_count_by_day[day]
                            end
       everyones_average = points.to_f / unique_users_count
       users_points += users_points_increment
@@ -66,5 +52,34 @@ class CumulativePoint
       i += 1
     end
     return_data
+  end
+
+  private
+
+  def init_raw_points
+    @raw_users_points =
+      PointsHelper.users_own_points(@point_source, @course_id, @token.user_id)
+    @raw_everyones_points =
+      PointsHelper.all_course_points(@point_source, @course_id)
+  end
+
+  def init_daywise_points
+    @users_points_by_day = PointsHelper.daywise_points(@raw_users_points)
+    @everyones_points_by_day =
+      PointsHelper.daywise_points(@raw_everyones_points)
+  end
+
+  def init_unique_users_count_by_day
+    all_unique_users = PointsHelper.unique_users_globally(@raw_everyones_points)
+    @unique_users_count_by_day =
+      PointsHelper.new_unique_users_per_day(@raw_everyones_points,
+                                            all_unique_users)
+  end
+
+  def init_cumulative_arrays
+    @everyones_cumulative_points_by_day =
+      PointsHelper.cumulativize(@everyones_points_by_day)
+    @cumulative_unique_users_count_by_day =
+      PointsHelper.cumulativize(@unique_users_count_by_day)
   end
 end

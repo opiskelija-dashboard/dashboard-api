@@ -40,9 +40,8 @@ class HeatmapsController < ApplicationController
   private
 
   def update_points_source_if_necessary(course_id, token)
-    unless @point_source.has_course_points?(course_id)
-      Rails.logger.debug("PointsStore didn't have points of course " + course_id + ", fetching...");
-      @point_source.update_course_points(course_id, token)
-    end
+    return if @point_source.has_course_points?(course_id)
+    Rails.logger.debug("PointsStore didn't have points of course #{course_id}, fetching...")
+    @point_source.update_course_points(course_id, token)
   end
 end

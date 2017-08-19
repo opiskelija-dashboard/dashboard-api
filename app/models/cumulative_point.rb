@@ -1,6 +1,6 @@
 # Class initializes Cumulative point with inputs: course_id and jwt-token,
 # which offers logged in user_id
-# Method day_point_objects returns an array for frontend purposes
+# Method date_point_average_object returns an array for frontend purposes
 # with data {"date", "user's points", "average"}
 class CumulativePoint
   def initialize(course_id, token)
@@ -19,33 +19,27 @@ class CumulativePoint
 
   # Returns an array of
   # {"day" => ..., "points" => ..., "average" => ...} hashes
-  def day_point_objects
-    init_raw_points
-    init_daywise_points
-    init_unique_users_count_by_day
-    init_cumulative_arrays
+  def date_point_average_object
+    init_all
 
     return_data = []
     i = 0
     users_points = 0
 
-    @everyones_cumulative_points_by_day.each do |day, points|
-      users_points_increment = if @users_points_by_day[day].nil?
+    @everyones_cumulative_points_by_day.each do |date, points|
+      users_points_increment = if @users_points_by_day[date].nil?
                                  0
-                               else @users_points_by_day[day]
+                               else @users_points_by_day[date]
                                end
 
-      unique_users_count = if @cumulative_unique_users_count_by_day[day].nil?
+      unique_users_count = if @cumulative_unique_users_count_by_day[date].nil?
                              0
-                           else @cumulative_unique_users_count_by_day[day]
+                           else @cumulative_unique_users_count_by_day[date]
                            end
       everyones_average = points.to_f / unique_users_count
       users_points += users_points_increment
-      Rails.logger.debug('Date: ' + day.to_s +
-        ' Everyones points: ' + points.to_s + " \nUniques: " +
-          unique_users_count.to_s)
       return_data.push(
-        'date' => day,
+        'date' => date,
         'users_points' => users_points,
         'everyones_average' => everyones_average
       )
@@ -55,6 +49,13 @@ class CumulativePoint
   end
 
   private
+
+  def init_all
+    init_raw_points
+    init_daywise_points
+    init_unique_users_count_by_day
+    init_cumulative_arrays
+  end
 
   def init_raw_points
     @raw_users_points =

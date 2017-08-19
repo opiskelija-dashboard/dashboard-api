@@ -19,37 +19,17 @@ class CumulativePoint
 
   # Returns an array of
   # {"day" => ..., "points" => ..., "average" => ...} hashes
+  # Basically just returns PointsStores data in different format
   def date_point_average_object
     init_all
-
-    return_data = []
-    i = 0
-    users_points = 0
-
-    @everyones_cumulative_points_by_day.each do |date, points|
-      users_points_increment = if @users_points_by_day[date].nil?
-                                 0
-                               else @users_points_by_day[date]
-                               end
-
-      unique_users_count = if @cumulative_unique_users_count_by_day[date].nil?
-                             0
-                           else @cumulative_unique_users_count_by_day[date]
-                           end
-      everyones_average = points.to_f / unique_users_count
-      users_points += users_points_increment
-      return_data.push(
-        'date' => date,
-        'users_points' => users_points,
-        'everyones_average' => everyones_average
-      )
-      i += 1
-    end
-    return_data
+    loop_cumulative_counts_by_day_and_make_final_result
   end
 
   private
 
+  # Initializes data for return:
+  # First gets raw_points from PointsStore and then
+  # modifies that data for calculation needs
   def init_all
     init_raw_points
     init_daywise_points
@@ -57,6 +37,7 @@ class CumulativePoint
     init_cumulative_arrays
   end
 
+  # Get raw_points to instance variables
   def init_raw_points
     @raw_users_points =
       PointsHelper.users_own_points(@point_source, @course_id, @token.user_id)
@@ -64,12 +45,15 @@ class CumulativePoint
       PointsHelper.all_course_points(@point_source, @course_id)
   end
 
+  # Uses @raw_points and initialize daywise hashes to instance variables
   def init_daywise_points
     @users_points_by_day = PointsHelper.daywise_points(@raw_users_points)
     @everyones_points_by_day =
       PointsHelper.daywise_points(@raw_everyones_points)
   end
 
+  # Uses @raw_points and initialize hashes of unique users 
+  # to instance variables
   def init_unique_users_count_by_day
     all_unique_users = PointsHelper.unique_users_globally(@raw_everyones_points)
     @unique_users_count_by_day =
@@ -77,10 +61,48 @@ class CumulativePoint
                                             all_unique_users)
   end
 
+  # Uses @points_by_day hashes and makes cumulative versions of them
+  # to instance variables
   def init_cumulative_arrays
     @everyones_cumulative_points_by_day =
       PointsHelper.cumulativize(@everyones_points_by_day)
     @cumulative_unique_users_count_by_day =
       PointsHelper.cumulativize(@unique_users_count_by_day)
   end
+
+  def if_nil_return_zero(value)
+    return 0 if value.nil?
+    value
+  end
+
+  def jsonize(date, users_points, everyones_average)
+    { 'date' => date,
+      'users_points' => users_points,
+      'everyones_average' => everyones_average }
+  end
+
+  # Loops instance variable @everyones_cumulative_points_by_day and
+  # OUTPUTs hash 
+  #   { 
+  #     "date" => date,
+  #     "users_points" => users_points,
+  #     "everyones_average" => everyones_average
+  #   }
+  # This is preferred format for frontend's needs, used in cumulative graph
+  def loop_cumulative_counts_by_day_and_make_final_result
+    return_data = []
+    users_points = 0
+    i = 0
+    @everyones_cumulative_points_by_day.each do |date, points|
+      users_points_increment = if_nil_return_zero(@users_points_by_day[date])
+      unique_users_count =
+        if_nil_return_zero(@cumulative_unique_users_count_by_day[date])
+      everyones_average = points.to_f / unique_users_count
+      users_points += users_points_increment
+      return_data.push(jsonize(date, users_points, everyones_average))
+      i += 1
+    end
+    return_data
+  end
+
 end

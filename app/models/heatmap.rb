@@ -6,7 +6,6 @@ class Heatmap
 
     @course_id = course_id
     @token = token
-
     return unless @point_source.has_course_points?(@course_id)
     Rails.logger.debug("PointsStore didn't have points of course " +
       @course_id + ', fetching...')
@@ -22,7 +21,6 @@ class Heatmap
     points_by_day.each do |day, points|
       week = Date.iso8601(day.to_s).strftime('%G-W%V')
       users_this_week = unique_users_by_week[week].to_f
-      Rails.logger.debug('Day ' + day.to_s + ', week ' + week.to_s + ', points today ' + points.to_s + ', users this week ' + users_this_week.to_s)
       avg = if users_this_week == 0
               0
             else

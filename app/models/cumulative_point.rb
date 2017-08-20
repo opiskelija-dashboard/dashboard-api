@@ -74,22 +74,22 @@ class CumulativePoint
     value
   end
 
-  def jsonize(date, users_points, everyones_average)
-    { 'date' => date,
-      'users_points' => users_points,
-      'everyones_average' => everyones_average }
-  end
-
   # Loops instance variable @everyones_cumulative_points_by_day and
   # OUTPUTs hash based on it's information
   #   {
-  #     "date" => date,
-  #     "users_points" => users_points,
-  #     "everyones_average" => everyones_average
+  #     "date": [
+  #               "users_points"
+  #               "everyones_average"
+  #             ],
+  #     "date": [
+  #               "users_points"
+  #               "everyones_average"
+  #             ],
+  #             ...
   #   }
   # This is preferred format for frontend's needs, used in cumulative graph
   def loop_cumulative_counts_by_day_and_make_final_result
-    return_data = []
+    return_data = {}
     users_points = 0
     i = 0
     @everyones_cumulative_points_by_day.each do |date, points|
@@ -98,7 +98,7 @@ class CumulativePoint
         if_nil_return_zero(@cumulative_unique_users_count_by_day[date])
       everyones_average = points.to_f / unique_users_count
       users_points += users_points_increment
-      return_data.push(jsonize(date, users_points, everyones_average))
+      return_data[date] = [users_points, everyones_average]
       i += 1
     end
     return_data

@@ -4,11 +4,11 @@ class HeatmapsController < ApplicationController
   def everyones_points_average
     course_id = params['course_id']
     if course_id.nil?
-      render json: error_missing_required_course_id, status: 400 and return # bad request
+      render json: error_missing_required_course_id, status: 400 # bad request
     end
     course_id = course_id.to_s
     heatmap_for_everyone = Heatmap.new(course_id, @token)
-    render json: { 'data' => heatmap_for_everyone.everyones_points_average } and return
+    render json: { 'data' => heatmap_for_everyone.everyones_points_average }
   end
 
   # GET /heatmap/courses/:course_id/current-user
@@ -16,11 +16,11 @@ class HeatmapsController < ApplicationController
     course_id = params['course_id']
     if course_id.nil?
       render json: error_missing_required_course_id_current_user,
-             status: 400 and return # bad request
+             status: 400 # bad request
     end
     course_id = course_id.to_s
     heatmap_for_current_user = Heatmap.new(course_id, @token)
-    render json: { 'data' => heatmap_for_current_user.current_user } and return
+    render json: { 'data' => heatmap_for_current_user.current_user }
   end
 
   private

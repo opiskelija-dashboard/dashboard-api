@@ -6,7 +6,6 @@ class CumulativePointsController < ApplicationController
       render json: error_for_course_id_nil, status: 400 # bad request
     end
     course_id = course_id.to_s
-
     cumulative_point = CumulativePoint.new(course_id, @token)
     render json: { 'data' => cumulative_point.date_point_average_object }
   end

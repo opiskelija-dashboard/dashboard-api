@@ -42,16 +42,17 @@ class PointsHelper
     points_by_day
   end
 
-  # To calculate the daily average of points submitted, we need not
-  # the count of how many users submitted that day, nor the cumulative
-  # count of user-IDs who have submitted so far, but the maximum amount
-  # of unique users who received points.
+  # To calculate the daily average of points awarded, we need NOT
+  # the count of how many users submitted that day, NOR the cumulative
+  # count of user-IDs who have awarded so far, but the maximum amount
+  # of unique users who have received points so far.
   def self.new_unique_users_per_day(raw_points, unique_users)
     daybuckets = {}
     # First, we chuck the users who submitted points into day-buckets.
     raw_points.each do |raw_point|
-      day = raw_point['awarded_point']['created_at'].to_date
-      user_id = raw_point['awarded_point']['user_id']
+      point_content = raw_point['awarded_point']
+      day = point_content['created_at'].to_date
+      user_id = point_content['user_id']
       if unique_users.include?(user_id)
         daybuckets[day] = [] if daybuckets[day].nil?
         daybuckets[day].push(user_id)
@@ -69,7 +70,7 @@ class PointsHelper
   # INPUT: raw-points as returned by PointsStore.course_points
   # OUTPUT: hash of format: { "date" => integer, "date" => integer },
   # where dates are ISO-8601 week dates, as returned by strftime("%G-W%V")
-  def self.unique_users_per_week(raw_points)
+  def self.unique_users_by_week(raw_points)
     weekbuckets = {}
     raw_points.each do |raw_point|
       date_obj = Date.iso8601(raw_point['awarded_point']['created_at'])
@@ -78,8 +79,8 @@ class PointsHelper
       user_id = raw_point['awarded_point']['user_id']
       weekbuckets[iso_week_date].push(user_id)
     end
-    unique_users_per_week = unique_bucket_count(weekbuckets)
-    unique_users_per_week
+    unique_users_by_week = unique_bucket_count(weekbuckets)
+    unique_users_by_week
   end
 
   # Returns unique users from the

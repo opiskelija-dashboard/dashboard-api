@@ -61,3 +61,6 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
 # JSON Web Tokens for "sessions"
 gem 'jwt'
+
+# For ruby styles
+gem 'rubocop', '~> 0.49.1', require: false

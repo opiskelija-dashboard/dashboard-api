@@ -11,9 +11,11 @@ describe CumulativePointsController do
       expect(last_response.status).to eq 200
     end
 
-    it 'returns json with "data" as the top element
-    and "day", "point" and "average" as sub-elements' do
+    it 'returns json with "data" as the top element' do
       expect(json['data']).not_to be_nil
+    end
+
+    it 'returns "date", "user_points" and "average" as sub-elements' do
       expect(json['data'][0]['date']).not_to be_nil
       expect(json['data'][0]['users_points']).not_to be_nil
       expect(json['data'][0]['everyones_average']).not_to be_nil

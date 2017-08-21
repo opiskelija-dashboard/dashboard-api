@@ -6,6 +6,7 @@ class HeatmapsController < ApplicationController
     if course_id.nil?
       render json: error_missing_required_course_id, status: 400 # bad request
     end
+
     course_id = course_id.to_s
     heatmap_for_everyone = Heatmap.new(course_id, @token)
     render json: { 'data' => heatmap_for_everyone.everyones_points_average }

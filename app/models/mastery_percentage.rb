@@ -13,7 +13,11 @@ class MasteryPercentage
   def initialize(course_id, token)
     @course_id = course_id
     @token = token
-    @point_source = Rails.configuration.points_store_class == 'MockPointsStore' ? MockPointsStore : PointsStore
+    # Typically, point_source would be PointsStore, but for testing purposes
+    # you might want to use MockPointsStore.
+    config = Rails.configuration.points_store_class
+    @point_source =
+    config == 'MockPointsStore' ? MockPointsStore : PointsStore
   end
 
   # Returns a hash of all exercises: key = id, value = available points.
@@ -128,54 +132,54 @@ class MasteryPercentage
     average = {}
     all_skills.each do |label, number_of_points|
       #average[label] = number_of_points.to_f / CumulativePoint.new(@token).all_points[1].count / match_labels_with_available_points[label].count # what a terribly long line. dont do this please
-      all_points_count = @point_source.course_points(@course_id).count
-      average[label] = number_of_points.to_f / all_points_count / match_labels_with_available_points[label].count
+        all_points_count = @point_source.course_points(@course_id).count
+        average[label] = number_of_points.to_f / all_points_count / match_labels_with_available_points[label].count
+      end
+      average
     end
-    average
-  end
 
-  # Returns array including: skill-labels and corresponding final percentages (current user and all users).
-  def skill_percentage
-    avg = label_average
-    skilllabels = avg.keys
-    all = avg.values
-    current_user = user_skill_ratio.values
+    # Returns array including: skill-labels and corresponding final percentages (current user and all users).
+    def skill_percentage
+      avg = label_average
+      skilllabels = avg.keys
+      all = avg.values
+      current_user = user_skill_ratio.values
 
-    percentages = []
-    i = 0
-    begin
-      partial = {}
-      partial['label'] = skilllabels[i]
-      partial['user'] = (current_user[i] * 100).round(1)
-      partial['average'] = (all[i] * 100).round(1)
-      percentages << partial
-      i += 1
-    end until i == skilllabels.count
-    percentages
-  end
-
-  # Returns hardcoded skill percentages (for now from mock-API).
-  def skills(endpoint)
-    skills_array = []
-
-    # without the API_BASE_ADDRESS this will use Rails.configuration.tmc_api_base_address,
-    # like everything should
-    response = HttpHelpers.tmc_api_get(endpoint, @token.tmc_token, API_BASE_ADDRESS)
-
-    return unless response[:success]
-
-    response[:body].each do |skill|
-      skills_array << Skill.new(skill['label'], skill['user'], skill['average'])
+      percentages = []
+      i = 0
+      begin
+        partial = {}
+        partial['label'] = skilllabels[i]
+        partial['user'] = (current_user[i] * 100).round(1)
+        partial['average'] = (all[i] * 100).round(1)
+        percentages << partial
+        i += 1
+      end until i == skilllabels.count
+      percentages
     end
-    skills_array
+
+    # Returns hardcoded skill percentages (for now from mock-API).
+    def skills(endpoint)
+      skills_array = []
+
+      # without the API_BASE_ADDRESS this will use Rails.configuration.tmc_api_base_address,
+      # like everything should
+      response = HttpHelpers.tmc_api_get(endpoint, @token.tmc_token, API_BASE_ADDRESS)
+
+      return unless response[:success]
+
+      response[:body].each do |skill|
+        skills_array << Skill.new(skill['label'], skill['user'], skill['average'])
+      end
+      skills_array
+    end
+
+    # NOTE! When there is a useful TMC server end point for ready skill procentages:
+
+    # replace the SKILLS_ENDPOINT below and in the beginning of the file '
+    # with corresponding correct API address path.
+
+    # def skill_percentages
+    #   skills(SKILLS_ENDPOINT)
+    # end
   end
-
-  # NOTE! When there is a useful TMC server end point for ready skill procentages:
-
-  # replace the SKILLS_ENDPOINT below and in the beginning of the file '
-  # with corresponding correct API address path.
-
-  # def skill_percentages
-  #   skills(SKILLS_ENDPOINT)
-  # end
-end

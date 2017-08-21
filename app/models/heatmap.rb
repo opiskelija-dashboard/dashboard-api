@@ -30,7 +30,7 @@ class Heatmap
             else
               points / users_this_week
             end
-      daily_average[day] = avg
+      daily_average[day] = avg.round(0)
     end
     daily_average
   end

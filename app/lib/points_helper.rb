@@ -42,28 +42,39 @@ class PointsHelper
     points_by_day
   end
 
-  # To calculate the daily average of points awarded, we need NOT
+  # TODO: UPDATE COMMENT: To calculate the daily average of points awarded, we need NOT
   # the count of how many users submitted that day, NOR the cumulative
   # count of user-IDs who have awarded so far, but the maximum amount
   # of unique users who have received points so far.
   def self.new_unique_users_per_day(raw_points, unique_users)
     daybuckets = {}
-    # First, we chuck the users who submitted points into day-buckets.
+
+    dates_and_users_hash = {}
     raw_points.each do |raw_point|
       point_content = raw_point['awarded_point']
-      day = point_content['created_at'].to_date
+      date = point_content['created_at'].to_date
       user_id = point_content['user_id']
-      if unique_users.include?(user_id)
-        daybuckets[day] = [] if daybuckets[day].nil?
-        daybuckets[day].push(user_id)
-        unique_users.delete(user_id)
-      else
-        daybuckets[day] = [] if daybuckets[day].nil?
+      dates_and_users_hash[date] = [] if dates_and_users_hash[date].nil?
+      dates_and_users_hash[date].push(user_id)
+    end
+
+    unique_users_list = dates_and_users_hash.sort
+    # TODO: UPDATE COMMENT: First, we chuck the users who submitted points into day-buckets.
+    unique_users_list.each do |date, users|
+      users.each do |user_id|
+        if unique_users.include?(user_id)
+          daybuckets[date] = [] if daybuckets[date].nil?
+          daybuckets[date].push(user_id)
+          unique_users.delete(user_id)
+        else
+          daybuckets[date] = [] if daybuckets[date].nil?
+        end
       end
     end
-    # Then, we sort and uniq all the day-buckets, and finally,
+    # TODO: UPDATE COMMENT: Then, we sort and uniq all the day-buckets, and finally,
     # we grab the size of each day-bucket.
     unique_users_by_day = unique_bucket_count(daybuckets)
+
     unique_users_by_day
   end
 

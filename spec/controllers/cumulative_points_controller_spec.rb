@@ -24,9 +24,9 @@ describe CumulativePointsController do
 
     it 'returns json with "data" as the top element and "day", "point" and "average" as sub-elements' do
       expect(json["data"]).not_to be_nil
-      expect(json["data"][0]["day"]).not_to be_nil
-      expect(json["data"][0]["points"]).not_to be_nil
-      expect(json["data"][0]["average"]).not_to be_nil
+      expect(json["data"][0]["date"]).not_to be_nil
+      expect(json["data"][0]["users_points"]).not_to be_nil
+      expect(json["data"][0]["everyones_average"]).not_to be_nil
     end
 
     it 'returns user-specific data' do
@@ -39,7 +39,7 @@ describe CumulativePointsController do
     it 'returns day in form of Y-M-D dates' do
       # String =~ Regexp returns nil if there's no match,
       # index of start of match if there is a match.
-      expect(json["data"][0]["day"] =~ /^\d\d\d\d-\d\d-\d\d/).not_to be_nil
+      expect(json["data"][0]["date"] =~ /^\d\d\d\d-\d\d-\d\d/).not_to be_nil
     end
 
   end

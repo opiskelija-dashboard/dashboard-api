@@ -74,10 +74,12 @@ class CumulativePoint
     value
   end
 
-  def jsonize(date, users_points, everyones_average)
+  def jsonize(date, users_points, everyones_average, everyone_count, all_points_count)
     { 'date' => date,		
       'users_points' => users_points,		
-      'everyones_average' => everyones_average }
+      'everyones_average' => everyones_average,
+      'everyone_count' => everyone_count,
+      'all_points_count' => all_points_count }
   end
   
   # Loops instance variable @everyones_cumulative_points_by_day and
@@ -98,7 +100,7 @@ class CumulativePoint
         if_nil_return_zero(@cumulative_unique_users_count_by_day[date])
       everyones_average = points.to_f / unique_users_count
       users_points += users_points_increment
-      return_data.push(jsonize(date, users_points, everyones_average))
+      return_data.push(jsonize(date, users_points, everyones_average, unique_users_count, points))
       i += 1
     end
     return_data

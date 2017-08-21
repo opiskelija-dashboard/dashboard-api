@@ -2,10 +2,13 @@ class CreateBadgeDefinitions < ActiveRecord::Migration[5.0]
   def change
     create_table :badge_definitions do |t|
       t.string   :name
-      t.string   :criteria
-      t.boolean  :global
-      t.boolean  :course_specific
+      t.string   :iconref
+      t.string   :flavor_text
+      t.integer  :made_by
       t.boolean  :active
+      t.boolean  :course_specific
+      t.boolean  :global
+      t.integer  :course_id
 
       t.timestamps
     end

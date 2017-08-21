@@ -3,15 +3,9 @@ require 'jwt'
 class Token
   
   JWT_HASH_ALGO = 'HS256'
-<<<<<<< HEAD
   @@jwt_secret = Rails.configuration.jwt_secret
   @@verify_tmc_creds = Rails.configuration.jwt_verify_tmc_credentials
 
-=======
-  @@jwt_secret = Rails.configuration.jwt_secret;
-  @@verify_tmc_creds = Rails.configuration.jwt_verify_tmc_credentials;
-  
->>>>>>> badgeEndPoint
   def initialize
     @errors = Array.new
     @invalidated = true

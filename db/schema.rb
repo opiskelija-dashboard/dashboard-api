@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170818082051) do
+ActiveRecord::Schema.define(version: 20170821085626) do
 
   create_table "awarded_badges", force: :cascade do |t|
     t.integer  "badge_definition_id"
@@ -20,21 +20,36 @@ ActiveRecord::Schema.define(version: 20170818082051) do
     t.datetime "updated_at",          null: false
   end
 
-  create_table "badge_definitions", force: :cascade do |t|
+  create_table "badge_criteria", force: :cascade do |t|
     t.string   "name"
-    t.string   "criteria"
-    t.boolean  "global"
-    t.boolean  "course_specific"
-    t.boolean  "active"
-    t.datetime "created_at",      null: false
-    t.datetime "updated_at",      null: false
+    t.string   "description"
+    t.string   "code"
+    t.integer  "created_by"
+    t.integer  "modified_by"
+    t.boolean  "bugs"
+    t.boolean  "course_points_only"
+    t.datetime "created_at",         null: false
+    t.datetime "updated_at",         null: false
   end
 
-  create_table "course_badges", force: :cascade do |t|
-    t.integer  "badge_definition_id"
+  create_table "badge_criteria_definitions", id: false, force: :cascade do |t|
+    t.integer "badge_criterium_id",  null: false
+    t.integer "badge_definition_id", null: false
+    t.index ["badge_criterium_id", "badge_definition_id"], name: "index_for_badge_crit_to_badge_def"
+    t.index ["badge_definition_id", "badge_criterium_id"], name: "index_for_badge_def_to_badge_crit"
+  end
+
+  create_table "badge_definitions", force: :cascade do |t|
+    t.string   "name"
+    t.string   "iconref"
+    t.string   "flavor_text"
+    t.integer  "made_by"
+    t.boolean  "active"
+    t.boolean  "course_specific"
+    t.boolean  "global"
     t.integer  "course_id"
-    t.datetime "created_at",          null: false
-    t.datetime "updated_at",          null: false
+    t.datetime "created_at",      null: false
+    t.datetime "updated_at",      null: false
   end
 
 end

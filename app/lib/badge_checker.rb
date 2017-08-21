@@ -3,7 +3,6 @@ class BadgeChecker
 
   def initialize(course_id, token)
     @point_source = Rails.configuration.points_store_class == 'MockPointsStore' ? MockPointsStore : PointsStore
-    @badges = Rails.configuration.badge_store_class == "MockBadgeStore" ? MockBadgeStore : BadgeStore
     @course_id = course_id
     @token = token
 
@@ -19,23 +18,26 @@ class BadgeChecker
   end
 
   # Checks which badges a user (user_id) is worthy of. 
-  def check(active_only)
-    badges = @badges.get_badges_with_course_id(@course_id, active_only)
+  def check(badges)
     points = @point_source.course_points(@course_id)
     user_ids = PointsHelper.user_ids_in_points(points)
+    badges_to_be_awarded = {}
     user_ids.each do |user_id|
-      badges.each do |badge_definition|
-        binding = achievement_predication_environment(user_id, points)
-        got_achievement = eval(badge_definition["criteria"], binding);
-        if (got_achievement)
-        # save to database here 
-        # Something along the lines of
-        # AwardedBadge.save(badge_definition["id"], user_id, @course_id)
-        puts ("User " + user_id.to_s + " got achievement '" + badge_definition["name"] + "'");
+      badges_for_user = []
+      badges.each do |badge|
+        award_badge = true
+        badge[1].each do |badge_criterion|
+          binding = achievement_predication_environment(user_id, points)
+          criterion_passes = eval(badge_criterion["code"], binding);
+          award_badge = false if !criterion_passes
         end
-      end  
+        if award_badge
+          badges_for_user << badge[0]
+        end
+      end
+      badges_to_be_awarded[user_id] = badges_for_user  
     end
-    return nil
+    badges_to_be_awarded
   end
 
 end

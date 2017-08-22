@@ -1,0 +1,2 @@
+class BadgeUpdateController < ApplicationController
+end

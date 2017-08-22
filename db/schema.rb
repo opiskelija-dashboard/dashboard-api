@@ -10,18 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170822092812) do
+ActiveRecord::Schema.define(version: 20170822092813) do
 
   create_table "badge_codes", force: :cascade do |t|
-    t.string   "name"
+    t.string   "name",                               null: false
     t.string   "description"
-    t.string   "code"
+    t.string   "code",                               null: false
     t.integer  "created_by"
     t.integer  "modified_by"
-    t.boolean  "bugs"
-    t.boolean  "course_points_only"
-    t.datetime "created_at",         null: false
-    t.datetime "updated_at",         null: false
+    t.boolean  "bugs",               default: false
+    t.boolean  "course_points_only", default: true
+    t.datetime "created_at",                         null: false
+    t.datetime "updated_at",                         null: false
   end
 
   create_table "badge_codes_defs", id: false, force: :cascade do |t|
@@ -32,21 +32,21 @@ ActiveRecord::Schema.define(version: 20170822092812) do
   end
 
   create_table "badge_defs", force: :cascade do |t|
-    t.string   "name"
+    t.string   "name",                            null: false
     t.string   "iconref"
     t.string   "flavor_text"
     t.integer  "made_by"
-    t.boolean  "active"
-    t.boolean  "course_specific"
-    t.boolean  "global"
+    t.boolean  "active",          default: false
+    t.boolean  "course_specific", default: true
+    t.boolean  "global",          default: false
     t.integer  "course_id"
-    t.datetime "created_at",      null: false
-    t.datetime "updated_at",      null: false
+    t.datetime "created_at",                      null: false
+    t.datetime "updated_at",                      null: false
   end
 
   create_table "badges", force: :cascade do |t|
-    t.integer  "badge_definition_id"
-    t.integer  "user_id"
+    t.integer  "badge_definition_id", null: false
+    t.integer  "user_id",             null: false
     t.integer  "course_id"
     t.datetime "created_at",          null: false
     t.datetime "updated_at",          null: false

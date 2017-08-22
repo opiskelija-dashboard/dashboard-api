@@ -14,9 +14,12 @@ Rails.application.routes.draw do
   get '/leaderboard/course/:course_id/whereis/:user_id', to: 'leaderboards#find_user'
   get '/leaderboard/course/:course_id/update', to: 'leaderboards#update_points'
 
-  get '/badges', to: 'badges#get_all_badges'
-
   get '/heatmap/courses/:course_id/all', to: 'heatmaps#get_all'
   get '/heatmap/courses/:course_id/current-user', to: 'heatmaps#get_current_user'
 
+  get '/user-badges/course/:course_id/earned', to: 'badges#get_earned_in_course'
+  get '/user-badges/course/:course_id/unearned', to: 'badges#get_unearned_in_course'
+  get '/user-badges/global/earned', to: 'badges#get_earned_global'
+  get '/user-badges/global/unearned', to: 'badges#get_unearned_global'
+  
 end

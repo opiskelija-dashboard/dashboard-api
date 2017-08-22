@@ -21,5 +21,16 @@ Rails.application.routes.draw do
   get '/user-badges/course/:course_id/unearned', to: 'badges#get_unearned_in_course'
   get '/user-badges/global/earned', to: 'badges#get_earned_global'
   get '/user-badges/global/unearned', to: 'badges#get_unearned_global'
-  
+
+  get '/badge-admin/badgedef/all', to: 'badge_admin#get_all_badgedefs'
+  get '/badge-admin/badgedef/:badgedef_id', to: 'badge_admin#get_badgedef'
+  get '/badge-admin/badgecode/all', to: 'badge_admin#get_all_badgecodes'
+  get '/badge-admin/badgecode/:badgecode_id', to: 'badge_admin#get_badgecode'
+  post '/badge-admin/badgedef', to: 'badge_admin#new_badgedef'
+  post '/badge-admin/badgecode', to: 'badge_admin#new_codedef'
+  put '/badge-admin/badgedef/:badgedef_id', to: 'badge_admin#update_badgedef'
+  put '/badge-admin/badgecode/:badgecode_id', to: 'badge_admin#update_badgecode'
+  delete '/badge-admin/badgedef/:badgedef_id', to: 'badge_admin#delete_badgedef'
+  delete '/badge-admin/badgecode/:badgecode_id', to: 'badge_admin#delete_badgecode'
+
 end

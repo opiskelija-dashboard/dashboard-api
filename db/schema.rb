@@ -45,11 +45,11 @@ ActiveRecord::Schema.define(version: 20170822092813) do
   end
 
   create_table "badges", force: :cascade do |t|
-    t.integer  "badge_definition_id", null: false
-    t.integer  "user_id",             null: false
+    t.integer  "badge_def_id", null: false
+    t.integer  "user_id",      null: false
     t.integer  "course_id"
-    t.datetime "created_at",          null: false
-    t.datetime "updated_at",          null: false
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
   end
 
 end

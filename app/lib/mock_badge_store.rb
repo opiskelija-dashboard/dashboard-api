@@ -1,20 +1,26 @@
 class MockBadgeStore
   
-  def self.save(something)
-    #nothing here
-  end
-  
-  def self.update(something)
-    #nothing here either
-  end
-  
   def self.get_badge_definitions
-    return @badges_defs
+    @badges_defs
   end
   
   def self.get_badge_criteria
-    return @badge_crits
+    @badge_crits
   end
+
+  def self.get_awarded_badges_with_user_id(user_id)
+    awbadges = get_awarded_badges
+    awbadges_with_user_id = []
+    awbadges.each do |ab|
+      awbadges_with_user_id << ab if (ab["user_id"] == user_id)
+    end
+    awbadges_with_user_id
+  end
+
+  def self.get_awarded_badges
+    @awarded_badges
+  end
+
   
   def self.update_awarded_badges(course_id, token)
     bchecker = BadgeChecker.new(course_id, token)
@@ -32,6 +38,8 @@ class MockBadgeStore
     return nil
   end
   
+  # Returns a hash where the course_id is the same as in parameters:
+  # { badge_definition: [badge_criteria]}
   def self.get_badges_with_course_id(course_id, active_only)
     badge_defs = get_badge_definitions
     badge_crits = get_badge_criteria
@@ -51,6 +59,8 @@ class MockBadgeStore
     badges_with_course_id
   end
   
+  # Returns a hash:
+  # { badge_definition: [badge_criteria]}
   def self.get_all_badges(active_only)
     badge_defs = get_badge_definitions
     badge_crits = get_badge_criteria
@@ -74,9 +84,9 @@ class MockBadgeStore
   "iconref" => "preschool.jpg",
   "flavor_text" => "could do this blindfolded",
     "created_at" => "2016-10-17T11:10:17.295+03:00",
-    "modified_at" => "2016-10-17T11:10:17.295+03:00",
+    "updated_at" => "2016-10-17T11:10:17.295+03:00",
     "created_by" => 1,
-    "modified_by" => 1,
+    "updated_by" => 1,
     "active" => true,
     "course_specific" => false,
     "global" => true,
@@ -86,9 +96,9 @@ class MockBadgeStore
   "iconref" => "impossibru.jpg",
   "flavor_text" => "couldn't do this",
     "created_at" => "2016-10-17T11:10:17.295+03:00",
-    "modified_at" => "2016-10-17T11:10:17.295+03:00",
+    "updated_at" => "2016-10-17T11:10:17.295+03:00",
     "created_by" => 1,
-    "modified_by" => 1,
+    "updated_by" => 1,
     "active" => false,
     "course_specific" => false,
     "global" => true,
@@ -101,9 +111,9 @@ class MockBadgeStore
     "description" => "easy get",
     "code" => "2 > 1",
     "created_at" => "2016-10-17T11:10:17.295+03:00",
-    "modified_at" => "2016-10-17T11:10:17.295+03:00",
+    "updated_at" => "2016-10-17T11:10:17.295+03:00",
     "created_by" => 1,
-    "modified_by" => 1,
+    "updated_by" => 1,
     "bugs" => false,
     "course_points_only" => false
   },
@@ -111,11 +121,26 @@ class MockBadgeStore
   "description" => "never get",
   "code" => %q(2 == 2),
   "created_at" => "2016-10-17T11:10:17.295+03:00",
-  "modified_at" => "2016-10-17T11:10:17.295+03:00",
+  "updated_at" => "2016-10-17T11:10:17.295+03:00",
   "created_by" => 1,
-  "modified_by" => 1,
+  "updated_by" => 1,
   "bugs" => false,
   "course_points_only" => false 
+  }]
+  
+  @awarded_badges = [
+  { "badge_definition_id" => 1,
+  "name" => "test1",
+  "user_id" => 1,
+  "course_id" => 1,
+  "created_at" => "2016-10-17T11:10:17.295+03:00",
+  "updated_at" => "2016-10-17T11:10:17.295+03:00"
+  },{ "badge_definition_id" => 2,
+  "name" => "test2",
+  "user_id" => 1,
+  "course_id" => 1,
+  "created_at" => "2016-10-17T11:10:17.295+03:00",
+  "updated_at" => "2016-10-17T11:10:17.295+03:00"
   }]
   
 end

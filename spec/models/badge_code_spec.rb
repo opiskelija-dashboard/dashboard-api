@@ -1,5 +1,5 @@
 require 'rails_helper'
 
-RSpec.describe BadgeCriterium, type: :model do
+RSpec.describe BadgeCode, type: :model do
   pending "add some examples to (or delete) #{__FILE__}"
 end

@@ -1,6 +1,6 @@
-class CreateBadgeDefinitions < ActiveRecord::Migration[5.0]
+class CreateBadgeDefs < ActiveRecord::Migration[5.0]
   def change
-    create_table :badge_definitions do |t|
+    create_table :badge_defs do |t|
       t.string   :name
       t.string   :iconref
       t.string   :flavor_text

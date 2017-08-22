@@ -10,17 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170821085626) do
+ActiveRecord::Schema.define(version: 20170822092812) do
 
-  create_table "awarded_badges", force: :cascade do |t|
-    t.integer  "badge_definition_id"
-    t.integer  "user_id"
-    t.integer  "course_id"
-    t.datetime "created_at",          null: false
-    t.datetime "updated_at",          null: false
-  end
-
-  create_table "badge_criteria", force: :cascade do |t|
+  create_table "badge_codes", force: :cascade do |t|
     t.string   "name"
     t.string   "description"
     t.string   "code"
@@ -32,14 +24,14 @@ ActiveRecord::Schema.define(version: 20170821085626) do
     t.datetime "updated_at",         null: false
   end
 
-  create_table "badge_criteria_definitions", id: false, force: :cascade do |t|
-    t.integer "badge_criterium_id",  null: false
-    t.integer "badge_definition_id", null: false
-    t.index ["badge_criterium_id", "badge_definition_id"], name: "index_for_badge_crit_to_badge_def"
-    t.index ["badge_definition_id", "badge_criterium_id"], name: "index_for_badge_def_to_badge_crit"
+  create_table "badge_codes_defs", id: false, force: :cascade do |t|
+    t.integer "badge_code_id", null: false
+    t.integer "badge_def_id",  null: false
+    t.index ["badge_code_id", "badge_def_id"], name: "index_for_badge_code_to_badge_def"
+    t.index ["badge_def_id", "badge_code_id"], name: "index_for_badge_def_to_badge_code"
   end
 
-  create_table "badge_definitions", force: :cascade do |t|
+  create_table "badge_defs", force: :cascade do |t|
     t.string   "name"
     t.string   "iconref"
     t.string   "flavor_text"
@@ -50,6 +42,14 @@ ActiveRecord::Schema.define(version: 20170821085626) do
     t.integer  "course_id"
     t.datetime "created_at",      null: false
     t.datetime "updated_at",      null: false
+  end
+
+  create_table "badges", force: :cascade do |t|
+    t.integer  "badge_definition_id"
+    t.integer  "user_id"
+    t.integer  "course_id"
+    t.datetime "created_at",          null: false
+    t.datetime "updated_at",          null: false
   end
 
 end

@@ -1,6 +1,6 @@
-class CreateBadgeCriteria < ActiveRecord::Migration[5.0]
+class CreateBadgeCodes < ActiveRecord::Migration[5.0]
   def change
-    create_table :badge_criteria do |t|
+    create_table :badge_codes do |t|
       t.string   :name
       t.string   :description
       t.string   :code

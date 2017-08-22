@@ -1,5 +1,5 @@
 FactoryGirl.define do
-  factory :awarded_badge do
+  factory :badge do
     
   end
 end

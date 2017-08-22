@@ -1,5 +1,5 @@
 FactoryGirl.define do
-  factory :badge_criterium do
+  factory :badge_def do
     
   end
 end

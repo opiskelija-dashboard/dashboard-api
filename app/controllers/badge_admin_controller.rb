@@ -3,6 +3,9 @@ class BadgeAdminController < ApplicationController
 
   # GET /badge-admin/badgedef/all
   def all_badgedefs
+    all_badgedefs = BadgeDef.all
+    badgelist = all_badgedefs.map { |bd| format_badgedef_for_output(bd) }
+    render json: { 'data' => badgelist }, status: 200 # OK
   end
 
   # GET /badge-admin/badgedef/:badgedef_id
@@ -41,8 +44,21 @@ class BadgeAdminController < ApplicationController
   def delete_badgecode
   end
 
-
   private
+
+  def format_badgedef_for_output(badgedef)
+    # "map(&:id)"" does the same as "map { |bc| bc.id }", according to rubocop
+    code_ids = badgedef.badge_codes.map(&:id)
+    {
+      'badgedef_id' => badgedef.id,
+      'name' => badgedef.name,
+      'iconref' => badgedef.iconref,
+      'flavor_text' => badgedef.flavor_text,
+      'course_id' => badgedef.course_id,
+      'active' => badgedef.active?,
+      'badge_codes' => code_ids
+    }
+  end
 
   def require_adminicity
     return true if @token.admin?
@@ -54,8 +70,7 @@ class BadgeAdminController < ApplicationController
           'detail' => 'Your token needs to have the \'tmcadm\' bit set before you can access this end point.'
         }
       ]
-    }
+    }, status: 401
     false
   end
-
 end

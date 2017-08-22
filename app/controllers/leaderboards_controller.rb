@@ -115,8 +115,8 @@ class LeaderboardsController < ApplicationController
     else
       errors = update_attempt[:errors]
       errors.push(
-      title: "Unable to update leaderboard for course #{course_id}",
-      detail: 'The update failed at the course-point-updating stage.'
+        title: "Unable to update leaderboard for course #{course_id}",
+        detail: 'The update failed at the course-point-updating stage.'
       )
       render json: { errors: errors }, status: 500 # Server error
     end

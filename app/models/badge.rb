@@ -3,7 +3,7 @@ class Badge < ApplicationRecord
 
   # Badge fields:
   # id
-  # badge_definition_id
+  # badge_def_id
   # user_id
   # course_id
   # created_at          

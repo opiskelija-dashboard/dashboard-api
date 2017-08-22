@@ -1,7 +1,19 @@
 require 'jwt'
 
 class Token
-  
+
+  # Fields/accessor methods:
+  # username
+  # tmc_token
+  # user_id
+  # admin?
+  # expires
+  # jwt
+  # errors?
+  # errors
+  # valid?
+  # tested?
+
   JWT_HASH_ALGO = 'HS256'
   @@jwt_secret = Rails.configuration.jwt_secret
   @@verify_tmc_creds = Rails.configuration.jwt_verify_tmc_credentials
@@ -110,7 +122,7 @@ class Token
     @tmc_user_id
   end
 
-  def is_admin
+  def admin?
     @is_tmc_admin
   end
 

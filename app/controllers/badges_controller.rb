@@ -45,12 +45,14 @@ class BadgesController < ApplicationController
   def find_all_in_course(course_id)
     all_badges_in_course = []
     BadgeDef.find_each do |bdef|
-      all_badges_in_course << bdef if (course_id == bdef.course_id)
+      badge_is_active = bdef.active
+      course_id_is_right = course_id == bdef.course_id
+      all_badges_in_course << bdef if (badge_is_active && course_id_is_right)
     end
     all_badges_in_course 
   end
   
-  # Returns all badge user has earned in every course
+  # Returns all global badges user has earned
   def find_all_global_earned
     earned_badges = []
     Badge.find_each do |badge|
@@ -61,11 +63,13 @@ class BadgesController < ApplicationController
     earned_badges
   end
   
+  # Returns all global badges that are active
   def find_all_global_badges
     all_badges = []
     BadgeDef.find_each do |bdef|
+      badge_is_active = bdef.active
       badge_is_global = bdef.global == true
-      all_badges << bdef if (badge_is_global)
+      all_badges << bdef if (badge_is_global && badge_is_active)
     end
     all_badges
   end

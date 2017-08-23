@@ -13,5 +13,4 @@ class BadgeCode < ApplicationRecord
   # created_at
   # updated_at
   # badge_defs   --virtual field, returns array of BadgeDefs
-
 end

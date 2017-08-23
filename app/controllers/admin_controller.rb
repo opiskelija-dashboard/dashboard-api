@@ -13,7 +13,7 @@ class AdminController < ApplicationController
   # were shown were not to be used and using them caused either nothing to
   # happen or errors to appear.
   def is_admin
-    admin_bit = @token.is_admin
+    admin_bit = @token.admin?
     render json: { 'admin' => admin_bit }, status: 200 #OK
   end
 

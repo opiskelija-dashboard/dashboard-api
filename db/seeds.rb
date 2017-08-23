@@ -26,11 +26,23 @@ BadgeDef.create(
   id: 2, name: 'Achi 2 (always false)', created_at: Time.at(1),
   updated_at: Time.at(1), active: true, course_specific: false, global: true
 )
+BadgeDef.create(
+  id: 3, name: 'Achi 3 (always true)', created_at: Time.at(1),
+  updated_at: Time.at(1), active: true, course_specific: true, global: false,
+  course_id: 1
+)
+BadgeDef.create(
+  id: 4, name: 'Achi 4 (always false)', created_at: Time.at(1),
+  updated_at: Time.at(1), active: true, course_specific: true, global: false,
+  course_id: 1
+)
 
 # Link the two BadgeCodes to our two BadgeDefs thusly:
 # BadgeDef 'Achi 1 (always true)' --- BadgeCode 1, 'Always true'
 # BadgeDef 'Achi 2 (always false)' --- BadgeCode 1, 'Always true'
 # AND                              --- BadgeCode 2, 'Always false'
+# BadgeDef 'Achi 3 (always true)' with global: true --- BadgeCode 1, 'Always true'
+# BadgeDef 'Achi 4 (always false)' with global: true --- BadgeCode 2, 'Always false'
 linked_already = BadgeDef.find(1).badge_codes.exists?(BadgeCode.find(1))
 BadgeDef.find(1).badge_codes << BadgeCode.find(1) unless linked_already
 
@@ -39,3 +51,11 @@ BadgeDef.find(2).badge_codes << BadgeCode.find(1) unless linked_already
 
 linked_already = BadgeDef.find(2).badge_codes.exists?(BadgeCode.find(2))
 BadgeDef.find(2).badge_codes << BadgeCode.find(2) unless linked_already
+
+linked_already = BadgeDef.find(3).badge_codes.exists?(BadgeCode.find(1))
+BadgeDef.find(3).badge_codes << BadgeCode.find(1) unless linked_already
+
+linked_already = BadgeDef.find(4).badge_codes.exists?(BadgeCode.find(2))
+BadgeDef.find(4).badge_codes << BadgeCode.find(2) unless linked_already
+
+

@@ -20,10 +20,22 @@ class BadgeAdminController < ApplicationController
   end
 
   # GET /badge-admin/badgecode/all
-  def all_badgecodes; end
+  def all_badgecodes
+    all_badgecodes = BadgeCode.all
+    codelist = all_badgecodes.map { |bc| format_badge_code_for_output(bc) }
+    render json: { 'data' => codelist }, status: 200 # OK
+  end
 
   # GET /badge-admin/badgecode/:badgecode_id
-  def one_badgecode; end
+  def one_badgecode
+    if BadgeCode.exists?(params['badgecode_id'])
+      bcode = BadgeCode.find(params['badgecode_id'])
+      render json: { 'data' => format_badge_code_for_output(bcode) },
+             status: 200 # OK
+    else
+      render json: { 'data' => [] }, status: 404 # Not Found
+    end
+  end
 
   # POST /badge-admin/badgedef
   def new_badgedef; end
@@ -56,6 +68,19 @@ class BadgeAdminController < ApplicationController
       'course_id' => badgedef.course_id,
       'active' => badgedef.active?,
       'badge_codes' => code_ids
+    }
+  end
+
+  def format_badge_code_for_output(bcode)
+    # BadgeCode records also have a virtual field, `badge_defs`, which
+    # is an array of all BadgeDef records that use the current BadgeCode.
+    {
+      'badgecode_id' => bcode.id,
+      'name' => bcode.name,
+      'description' => bcode.description,
+      'code' => bcode.code,
+      'bugs' => bcode.bugs?,
+      'course_specific' => bcode.course_points_only?
     }
   end
 

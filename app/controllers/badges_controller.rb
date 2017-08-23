@@ -4,7 +4,8 @@ class BadgesController < ApplicationController
   def get_earned_in_course
     course_id = params["course_id"].to_i
     earned_badges = find_earned_in_course(course_id)
-    render json: {"data" => earned_badges }
+    earned_badges_info = parse_earned(earned_badges)
+    render json: {"data" => earned_badges_info}
   end
   
   # GET /user-badges/course/:course_id/unearned
@@ -13,21 +14,24 @@ class BadgesController < ApplicationController
     earned_in_course = find_earned_in_course(course_id)
     all_badges_in_course = find_all_in_course(course_id)
     unearned_in_course = all_badges_in_course - earned_in_course
-    render json: {"data" => unearned_in_course}
+    unearned_in_course_info = parse_unearned(unearned_in_course)
+    render json: {"data" => unearned_in_course_info}
   end
   
   # GET /user-badges/global/earned
   def get_earned_global
-    earned_badges = find_all_global_earned
-    render json: {"data" => earned_badges}
+    earned_badges = find_all_global_earned(true) #true returns badges, false badge_defs
+    earned_badges_info = parse_earned(earned_badges)
+    render json: {"data" => earned_badges_info}
   end
   
   # GET /user-badges/global/unearned
   def get_unearned_global
     all_global_badges = find_all_global_badges
-    earned_badges = find_all_global_earned
-    unearned = all_global_badges - earned_badges
-    render json: {"data" => unearned}
+    earned_badges = find_all_global_earned(false) #false returns badge_defs, true badges
+    unearned_badges = all_global_badges - earned_badges
+    unearned_badges_info = parse_unearned(unearned_badges)
+    render json: {"data" => unearned_badges_info}
   end
   
   # Returns badges user has done in given course
@@ -36,7 +40,7 @@ class BadgesController < ApplicationController
     Badge.find_each do |badge|
       course_is_right = badge.course_id == course_id
       user_is_right = badge.user_id == @token.user_id.to_i
-      earned_in_course << badge.badge_def if (course_is_right && user_is_right)
+      earned_in_course << badge if (course_is_right && user_is_right)
     end
     earned_in_course
   end
@@ -53,12 +57,16 @@ class BadgesController < ApplicationController
   end
   
   # Returns all global badges user has earned
-  def find_all_global_earned
+  def find_all_global_earned(badges_over_badge_defs)
     earned_badges = []
     Badge.find_each do |badge|
       user_is_correct = badge.user_id == @token.user_id.to_i
       badge_is_global = badge.badge_def.global == true
-      earned_badges << badge.badge_def if (user_is_correct && badge_is_global)
+      if badges_over_badge_defs
+        earned_badges << badge if (user_is_correct && badge_is_global)
+      else
+        earned_badges << badge.badge_def if (user_is_correct && badge_is_global)
+      end
     end
     earned_badges
   end
@@ -72,6 +80,29 @@ class BadgesController < ApplicationController
       all_badges << bdef if (badge_is_global && badge_is_active)
     end
     all_badges
+  end
+  
+  def parse_earned(earned_badges)
+    earned_badges_info = {}
+    unless earned_badges.empty?
+      earned_badges.each do |badge|
+        earned_badges_info["name"] = badge.badge_def.name
+        earned_badges_info["iconref"] = badge.badge_def.iconref
+        earned_badges_info["flavor_text"] = badge.badge_def.flavor_text
+        earned_badges_info["awarded_at"] = badge.created_at
+      end
+    end
+    earned_badges_info
+  end
+  
+  def parse_unearned(unearned_in_course)
+    unearned_in_course_info = {}
+    unearned_in_course.each do |badgedef|
+      unearned_in_course_info["name"] = badgedef.name
+      unearned_in_course_info["flavor_text"] = badgedef.flavor_text
+      unearned_in_course_info["iconref"] = badgedef.iconref
+    end
+    unearned_in_course_info
   end
   
 end

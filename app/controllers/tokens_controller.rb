@@ -12,7 +12,7 @@ class TokensController < ApplicationController
     if token.errors?
       render json: { # json:api format
         'errors' => token.errors
-      }, status: 401
+      }, status: 401 # Unauthorized
     elsif !token.valid?
       # rubocop:disable Metrics/LineLength
       # Linux-styleguide approach to long lines: in general, no, except with
@@ -23,7 +23,7 @@ class TokensController < ApplicationController
           'title' => 'Just-generated JWT token is invalid',
           'detail' => 'Not sure why the token would be invalid but there weren\'t any other errors. See logs.'
         }]
-      }, status: 401
+      }, status: 401 # Unauthorized
       # rubocop:enable Metrics/LineLength
     else
       render json: {

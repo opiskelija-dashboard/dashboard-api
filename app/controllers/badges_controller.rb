@@ -57,6 +57,8 @@ class BadgesController < ApplicationController
   end
   
   # Returns all global badges user has earned
+  # If you give true as a parameter, this method returns badges.
+  # If you give false, this returns badge_defs.
   def find_all_global_earned(badges_over_badge_defs)
     earned_badges = []
     Badge.find_each do |badge|
@@ -82,6 +84,7 @@ class BadgesController < ApplicationController
     all_badges
   end
   
+  # Parses given badges to not include irrelevant info
   def parse_earned(earned_badges)
     earned_badges_info = {}
     unless earned_badges.empty?
@@ -95,6 +98,7 @@ class BadgesController < ApplicationController
     earned_badges_info
   end
   
+  # Parses given badge_defs to not include irrelevant info
   def parse_unearned(unearned_in_course)
     unearned_in_course_info = {}
     unearned_in_course.each do |badgedef|

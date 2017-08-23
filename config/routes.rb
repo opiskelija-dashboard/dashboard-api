@@ -18,10 +18,10 @@ Rails.application.routes.draw do
   get '/heatmap/courses/:course_id/all', to: 'heatmaps#get_all'
   get '/heatmap/courses/:course_id/current-user', to: 'heatmaps#get_current_user'
 
-  get '/user-badges/course/:course_id/earned', to: 'badges#get_earned_in_course'
-  get '/user-badges/course/:course_id/unearned', to: 'badges#get_unearned_in_course'
-  get '/user-badges/global/earned', to: 'badges#get_earned_global'
-  get '/user-badges/global/unearned', to: 'badges#get_unearned_global'
+  get '/user-badges/course/:course_id/earned', to: 'badges#earned_in_course'
+  get '/user-badges/course/:course_id/unearned', to: 'badges#unearned_in_course'
+  get '/user-badges/global/earned', to: 'badges#earned_global'
+  get '/user-badges/global/unearned', to: 'badges#unearned_global'
 
   get '/badge-admin/badgedef/all', to: 'badge_admin#all_badgedefs'
   get '/badge-admin/badgedef/:badgedef_id', to: 'badge_admin#one_badgedef'

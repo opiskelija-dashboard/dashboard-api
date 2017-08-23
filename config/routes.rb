@@ -1,3 +1,4 @@
+# rubocop:disable Metrics/LineLength, Metrics/BlockLength
 Rails.application.routes.draw do
   post '/new-dash-session', to: 'tokens#newtoken'
   get '/is-admin', to: 'admin#is_admin'
@@ -32,5 +33,4 @@ Rails.application.routes.draw do
   put '/badge-admin/badgecode/:badgecode_id', to: 'badge_admin#update_badgecode'
   delete '/badge-admin/badgedef/:badgedef_id', to: 'badge_admin#delete_badgedef'
   delete '/badge-admin/badgecode/:badgecode_id', to: 'badge_admin#delete_badgecode'
-
 end

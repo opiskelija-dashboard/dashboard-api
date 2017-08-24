@@ -71,7 +71,30 @@ class BadgeAdminController < ApplicationController
   end
 
   # POST /badge-admin/badgecode
-  def new_codedef; end
+  # Expected POST body: JSON, thusly: {
+  #   'name' => ..., 'description' => optional, 'code' => ...,
+  #   'bugs' => true/false, 'course_points_only' => true/false]
+  # }
+  # If 'code' doesn't have proper syntax, it will cause errors.
+  def new_codedef
+    can_continue = check_required_fields(%w[name code ])
+    return false unless can_continue
+    
+    # Check if code is ok and doesn't produce syntax errors
+    unless code_is_ok = true # TODO: test code here
+      return false
+    end
+    
+    badgecode = BadgeCode.new(params_to_badgecode_input)
+    # rubocop:disable Metrics/Linelength
+    if badgecode.save
+      render json: { 'data' => format_badge_code_for_output(badgecode) }, status: 200 # OK
+    else
+      render json: { 'errors' => [{ 'title' => 'BadgeCode saving failed', 'description' => 'TODO: fill this in' }] }, status: 500 # Internal Server Error
+    end
+    # rubocop:enable Metrics/LineLength
+    # TODO: logging
+  end
 
   # PUT /badge-admin/badgedef/:badgedef_id
   def update_badgedef; end
@@ -168,6 +191,17 @@ class BadgeAdminController < ApplicationController
       'course_specific' => params['course_specific'] || !params['global'],
       'course_id' => params['course_id'],
       'active' => params['active']
+    }
+  end
+
+  # This assumes you've already checked that all necessary params exist.
+  def params_to_badgecode_input
+    {
+      'name' => params['name'],
+      'description' => params['description'],
+      'code' => params['code'],
+      'bugs' => params['bugs'],
+      'course_points_only' => params['course_points_only']
     }
   end
 

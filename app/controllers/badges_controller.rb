@@ -35,6 +35,8 @@ class BadgesController < ApplicationController
     render json: { 'data' => unearned_badges_info }
   end
 
+  private
+
   # Returns badges user has done in given course
   def find_earned_in_course(course_id)
     earned_in_course = []

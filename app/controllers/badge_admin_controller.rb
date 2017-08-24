@@ -119,7 +119,20 @@ class BadgeAdminController < ApplicationController
   end
 
   # DELETE /badge-admin/badgecode/:badgecode_id
-  def delete_badgecode; end
+  def delete_badgecode
+    bcid = params['badgecode_id']
+    if BadgeCode.exists?(bcid)
+      if BadgeCode.find(bcid).destroy
+        render json: { 'data' => "BadgeCode #{bcid} destroyed" }, 
+               status: 200 # OK
+      else
+        render json: { 'data' => "BadgeCode #{bcid} not destroyed" }, 
+               status: 500 # Internal Server Error
+      end
+    else
+      render json: { 'data' => "BadgeCode #{bcid} not found" }, status: 404
+    end
+  end
 
   private
 

@@ -29,14 +29,6 @@ module DashboardBackend
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
 
-     # This will allow GET, POST or OPTIONS requests from any origin on any resource.
-    config.middleware.insert_before 0, Rack::Cors do
-      allow do
-        origins '*'
-        resource '*', :headers => :any, :methods => [:get, :post, :options]
-      end
-    end
-
     # Configuration for our code
     config.tmc_api_base_address = 'https://tmc.mooc.fi/api/v8'
 

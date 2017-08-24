@@ -1,5 +1,4 @@
 class PointsStore
-
   # Format of raw_user_points elements:
   # { 'exercise_id' => 33235,
   #   'awarded_point' => {
@@ -32,7 +31,6 @@ class PointsStore
     t = update_time + UPDATE_INTERVAL  # Earliest time an update is necessary
     (t <=> Time.new) <= 0
   end
-
 
   # Returns a hash:
   # { success: true/false,

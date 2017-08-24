@@ -77,16 +77,14 @@ class BadgeAdminController < ApplicationController
   # }
   # If 'code' doesn't have proper syntax, it will cause errors.
   def new_codedef
-    can_continue = check_required_fields(%w[name code ])
+    can_continue = check_required_fields(%w[name code])
     return false unless can_continue
-    
-    # Check if code is ok and doesn't produce syntax errors
-    unless code_is_ok = true # TODO: test code here
-      return false
-    end
-    
+
+    # Check that code doesn't produce syntax errors and returns a boolean
+    return false unless 1 + 1 == 2 # TODO: test code in this method
+
     badgecode = BadgeCode.new(params_to_badgecode_input)
-    # rubocop:disable Metrics/Linelength
+    # rubocop:disable Metrics/LineLength
     if badgecode.save
       render json: { 'data' => format_badge_code_for_output(badgecode) }, status: 200 # OK
     else
@@ -100,7 +98,30 @@ class BadgeAdminController < ApplicationController
   def update_badgedef; end
 
   # PUT /badge-admin/badgecode/:badgecode_id
-  def update_badgecode; end
+  # Expected POST body: JSON, thusly: {
+  #   'name' => ..., 'description' => optional, 'code' => ...,
+  #   'bugs' => true/false, 'course_points_only' => true/false]
+  # }
+  # If 'code' doesn't have proper syntax, it will cause errors.
+  def update_badgecode
+    bcid = params['badgecode_id']
+
+    # Check that code doesn't produce syntax errors and returns a boolean
+    return false unless 1 + 1 == 2 # TODO: Check if code is ok here
+
+    if BadgeCode.exists?(bcid)
+      if BadgeCode.where(id: bcid).update_all(params_to_badgecode_input)
+        render json: { 'data' => "BadgeCode #{bcid} updated" },
+               status: 200 # OK
+      else
+        render json: { 'data' => "BadgeCode #{bcid} failed to update" },
+               status: 500 # Internal Server Error
+      end
+    else
+      render json: { 'data' => "BadgeCode #{bcid} not found" },
+             status: 404
+    end
+  end
 
   # DELETE /badge-admin/badgedef/:badgedef_id
   def delete_badgedef
@@ -123,10 +144,10 @@ class BadgeAdminController < ApplicationController
     bcid = params['badgecode_id']
     if BadgeCode.exists?(bcid)
       if BadgeCode.find(bcid).destroy
-        render json: { 'data' => "BadgeCode #{bcid} destroyed" }, 
+        render json: { 'data' => "BadgeCode #{bcid} destroyed" },
                status: 200 # OK
       else
-        render json: { 'data' => "BadgeCode #{bcid} not destroyed" }, 
+        render json: { 'data' => "BadgeCode #{bcid} not destroyed" },
                status: 500 # Internal Server Error
       end
     else
@@ -209,13 +230,15 @@ class BadgeAdminController < ApplicationController
 
   # This assumes you've already checked that all necessary params exist.
   def params_to_badgecode_input
-    {
-      'name' => params['name'],
-      'description' => params['description'],
-      'code' => params['code'],
-      'bugs' => params['bugs'],
-      'course_points_only' => params['course_points_only']
-    }
+    input = {}
+    # rubocop:disable Metrics/LineLength
+    input['name'] = params['name'] unless params['name'].nil?
+    input['description'] = params['description'] unless params['description'].nil?
+    input['code'] = params['code'] unless params['code'].nil?
+    input['bugs'] = params['bugs'] unless params['bugs'].nil?
+    input['course_points_only'] = params['course_points_only'] unless params['course_points_only'].nil?
+    # rubocop:enable Metrics/LineLength
+    input
   end
 
   def format_badgedef_for_output(badgedef)

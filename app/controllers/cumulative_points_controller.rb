@@ -9,16 +9,17 @@ class CumulativePointsController < ApplicationController
     cumulative_point = CumulativePoint.new(course_id, @token)
     render json: { 'data' => cumulative_point.date_point_average_object }
   end
-end
 
-private
+  private
 
-def error_for_course_id_nil
-  { 'errors' => [
-    {
-      'title' => 'Missing required course_id',
-      'detail' => 'Request address must be of the corm /cumulative-points/
-      course/<course_id>, where <course-id> is the ID code of a TMC course.'
-    }
-  ] }
+  def error_for_course_id_nil
+    { 'errors' => [
+      {
+        'title' => 'Missing required course_id',
+        'detail' => 'Request address must be of the corm /cumulative-points/
+        course/<course_id>, where <course-id> is the ID code of a TMC course.'
+      }
+    ] }
+  end
+
 end

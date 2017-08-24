@@ -1,6 +1,10 @@
 class CoursePointsController < ApplicationController
   def initialize
-    @point_source = Rails.configuration.points_store_class == 'MockPointsStore' ? MockPointsStore : PointsStore
+    # Typically, point_source would be PointsStore, but for testing purposes
+    # you might want to use MockPointsStore.
+    config = Rails.configuration.points_store_class
+    @point_source =
+      config == 'MockPointsStore' ? MockPointsStore : PointsStore
   end
 
   # Update if necessary.
@@ -16,7 +20,6 @@ class CoursePointsController < ApplicationController
     update_attempt = @point_source.update_course_points(course_id, @token)
 
     if update_attempt[:success]
-      course_points = @point_source.course_points(course_id)
       render json: { data: "OK, updated points of course #{course_id}" }, status: 200
     else
       errors = update_attempt[:errors]

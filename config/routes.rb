@@ -4,9 +4,12 @@ Rails.application.routes.draw do
   get '/course-points/:course_id/update', to: 'course_points#update'
 
   get '/cumulative-points/course/:course_id', to: 'cumulative_points#show'
-  # Maybe this should be called skill-mastery?
-  get '/skill-percentages/course/:course_id', to: 'mastery_percentages#show'
 
+  get '/skill-mastery/course/:course_id/whereis/current', to: 'skill_masteries#current_user'
+  get '/skill-mastery/course/:course_id/all', to: 'skill_masteries#all' 
+  get '/skill-mastery/course/:course_id/combined', to: 'skill_masteries#combined'
+  
+  
   get '/leaderboard/course/:course_id', to: 'leaderboards#get_range'
   get '/leaderboard/course/:course_id/all', to: 'leaderboards#get_all'
   get '/leaderboard/course/:course_id/whereis/current', to: 'leaderboards#find_current_user'
@@ -17,5 +20,4 @@ Rails.application.routes.draw do
 
   get '/heatmap/courses/:course_id/all', to: 'heatmaps#everyones_points_average'
   get '/heatmap/courses/:course_id/current-user', to: 'heatmaps#current_users_points'
-
 end

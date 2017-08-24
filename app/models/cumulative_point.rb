@@ -2,20 +2,22 @@
 # which offers logged in user_id
 class CumulativePoint
   def initialize(course_id, token)
+    # Typically, point_source would be PointsStore, but for testing purposes
+    # you might want to use MockPointsStore.
     config = Rails.configuration.points_store_class
     @point_source =
       config == 'MockPointsStore' ? MockPointsStore : PointsStore
 
     @course_id = course_id
     @token = token
+
     return unless @point_source.has_course_points?(@course_id)
     # rubocop:disable Metrics/LineLength
     Rails.logger.debug("PointsStore didn't have points of course #{@course_id}, fetching...")
     # rubocop:enable Metrics/LineLength
 
     @point_source.update_course_points(@course_id, token) if
-      @point_source.course_point_update_needed?(@course_id) 
-
+      @point_source.course_point_update_needed?(@course_id)
   end
 
   # Returns an array of
@@ -80,19 +82,19 @@ class CumulativePoint
 
   def jsonize(date, users_points, everyones_average,
               everyone_count, all_points_count)
-    { 'date' => date,		
-      'users_points' => users_points,		
+    { 'date' => date,
+      'users_points' => users_points,
       'everyones_average' => everyones_average,
       'everyone_count' => everyone_count,
       'all_points_count' => all_points_count }
   end
-  
+
   # Loops instance variable @everyones_cumulative_points_by_day and
   # OUTPUTs Array of hashes based on @everyones_cumulative's information
-  #   { 
-  #     'date' => date,		
-  #     'users_points' => users_points,		
-  #     'everyones_average' => everyones_average 
+  #   {
+  #     'date' => date,
+  #     'users_points' => users_points,
+  #     'everyones_average' => everyones_average
   #    }
   # This is preferred format for frontend's needs, used in cumulative graph
   def loop_cumulative_counts_by_day_and_make_final_result

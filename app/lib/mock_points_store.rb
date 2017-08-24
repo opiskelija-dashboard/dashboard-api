@@ -85,7 +85,7 @@ class MockPointsStore
   # rubocop:disable Metrics/CyclomaticComplexity
   # This is just a laundry list method, no use in breaking it up
   # and spreading it out.
-  def generate_fake_points(course_id)
+  def self.generate_fake_points(course_id)
     today = Time.now.to_date
     course_start_time = (today - (4 * 7)).to_time.to_i # Date#- subtracts days.
     # course_end_time = (today + (2 * 7)).to_time.to_i # Date#+ adds days.
@@ -103,7 +103,7 @@ class MockPointsStore
     while weeks > 0
       points_this_week = Random.rand(4..16)
       while points_this_week > 0
-        point_name = '%02d_%02d'.format(weeks, points_this_week)
+        point_name = '%02d_%02d' % [weeks, points_this_week]
         fake_point_names.push(point_name)
         points_this_week -= 1
       end
@@ -157,7 +157,7 @@ class MockPointsStore
   end
 
   # rubocop:disable Metrics/ParameterLists
-  def fake_point(exercise_id, point_name, submission_id, course_id, point_id,
+  def self.fake_point(exercise_id, point_name, submission_id, course_id, point_id,
                  user_id, created_at)
     # %FT%T%z = YYYY-mm-dd + literal "T" + HH:MM:SS + "+/-"HHMM timezone
     timestr = created_at.strftime('%FT%T%z')
@@ -174,7 +174,7 @@ class MockPointsStore
     }
   end
 
-  def random_id_from_range(min, max)
+  def self.random_id_from_range(min, max)
     Random.rand(min..max)
   end
 end

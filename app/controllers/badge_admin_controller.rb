@@ -76,17 +76,22 @@ class BadgeAdminController < ApplicationController
   #   'bugs' => true/false, 'course_points_only' => true/false]
   # }
   # If 'code' doesn't have proper syntax, it will cause errors.
+  # Input to test with: { "name": "Syntax Error", "code": "(",
+  # "course_specific": false, "global": true }
   def new_codedef
     can_continue = check_required_fields(%w[name code])
+    # TODO: replace "return false" with proper error message
     return false unless can_continue
 
-    # Check that code doesn't produce syntax errors and returns a boolean
-    return false unless 1 + 1 == 2 # TODO: test code in this method
-
     badgecode = BadgeCode.new(params_to_badgecode_input)
+    code_ok = check_code_okayness_die_if_necessary(badgecode)
+    return false unless code_ok # Because we rendered, we must immediately quit.
+    badgecode.bugs = !code_ok
+
     # rubocop:disable Metrics/LineLength
     if badgecode.save
-      render json: { 'data' => format_badge_code_for_output(badgecode) }, status: 200 # OK
+      render json: { 'data' => format_badge_code_for_output(badgecode) },
+             status: 200 # OK
     else
       render json: { 'errors' => [{ 'title' => 'BadgeCode saving failed', 'description' => 'TODO: fill this in' }] }, status: 500 # Internal Server Error
     end
@@ -95,6 +100,10 @@ class BadgeAdminController < ApplicationController
   end
 
   # PUT /badge-admin/badgedef/:badgedef_id
+  # TODO: this
+  #          | ##### ####   #   ####
+  #          |   #   #  #  # #  #  #
+  #          V   #   #### ##### ####
   def update_badgedef; end
 
   # PUT /badge-admin/badgecode/:badgecode_id
@@ -105,22 +114,28 @@ class BadgeAdminController < ApplicationController
   # If 'code' doesn't have proper syntax, it will cause errors.
   def update_badgecode
     bcid = params['badgecode_id']
-
-    # Check that code doesn't produce syntax errors and returns a boolean
-    return false unless 1 + 1 == 2 # TODO: Check if code is ok here
-
-    if BadgeCode.exists?(bcid)
-      if BadgeCode.where(id: bcid).update_all(params_to_badgecode_input)
-        render json: { 'data' => "BadgeCode #{bcid} updated" },
-               status: 200 # OK
-      else
-        render json: { 'data' => "BadgeCode #{bcid} failed to update" },
-               status: 500 # Internal Server Error
-      end
-    else
-      render json: { 'data' => "BadgeCode #{bcid} not found" },
-             status: 404
+    if !BadgeCode.exists?(bcid)
+      render json: { 'errors' => [{ 'title' => 'BadgeCode Not Found',
+        'detail' => "BadgeCode #{bcid} not found" }] }, status: 404 # Not Found
+      return false # Because we rendered, we must immediately quit.
     end
+    badgecode = BadgeCode.find(bcid)
+
+    # Overwrite the badgecode found from the database with the input.
+    update_ok = badgecode.update(params_to_badgecode_input)
+
+    unless update_ok
+      render json: { 'errors' => [{ 'title' => 'BadgeCode update failed',
+        'details' => "BadgeCode #{bcid} failed to update" }] },
+        status: 500 # Internal Server Error
+    end
+
+    code_ok = check_code_okayness_die_if_necessary(badgecode)
+    return false unless code_ok # check_code_okayness... renders when not ok
+    badgecode.bugs = !code_ok
+    badgecode.save
+    render json: { 'data' => "BadgeCode #{bcid} updated" },
+           status: 200 # OK
   end
 
   # DELETE /badge-admin/badgedef/:badgedef_id
@@ -268,6 +283,21 @@ class BadgeAdminController < ApplicationController
       'bugs' => bcode.bugs?,
       'course_specific' => bcode.course_points_only?
     }
+  end
+
+  # Preliminary syntax check with fake data
+  def check_code_okayness_die_if_necessary(badgecode)
+    test_result = BadgeHelper.testForErrors(badgecode)
+    if test_result[:bugs]
+      error_objects = []
+      test_result[:errors].each do |e|
+        er_obj = { 'title' => 'Code error', 'description' => e[:title] }
+        error_objects.push(er_obj)
+      end
+      render json: { 'errors' => error_objects }, status: 400 # Bad Request
+      return false
+    end
+    true
   end
 
   def require_adminicity

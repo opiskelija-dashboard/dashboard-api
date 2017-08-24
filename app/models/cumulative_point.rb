@@ -1,7 +1,5 @@
 # Class initializes Cumulative point with inputs: course_id and jwt-token,
 # which offers logged in user_id
-# Method date_point_average_object returns an array for frontend purposes
-# with data {"date", "user's points", "average"}
 class CumulativePoint
   def initialize(course_id, token)
     # Typically, point_source would be PointsStore, but for testing purposes
@@ -12,15 +10,21 @@ class CumulativePoint
 
     @course_id = course_id
     @token = token
+
     return unless @point_source.has_course_points?(@course_id)
-    Rails.logger.debug("PointsStore didn't have points of course #{course_id}, 
-                        fetching...")
-    @point_source.update_course_points(@course_id, token)
+    # rubocop:disable Metrics/LineLength
+    Rails.logger.debug("PointsStore didn't have points of course #{@course_id}, fetching...")
+    # rubocop:enable Metrics/LineLength
+
+    @point_source.update_course_points(@course_id, token) if
+      @point_source.course_point_update_needed?(@course_id)
   end
 
   # Returns an array of
-  # {"day" => ..., "points" => ..., "average" => ...} hashes
-  # Basically just returns PointsStores data in different format
+  # {"day" => [...], "points" => [...], "average" => [...]} hashes
+  # Basically just returns PointsStores data in different format.
+  # This format is required by the frontend, which prefers three
+  # separate arrays instead of one single array of objects.
   def date_point_average_object
     init_all
     loop_cumulative_counts_by_day_and_make_final_result
@@ -76,7 +80,8 @@ class CumulativePoint
     value
   end
 
-  def jsonize(date, users_points, everyones_average, everyone_count, all_points_count)
+  def jsonize(date, users_points, everyones_average,
+              everyone_count, all_points_count)
     { 'date' => date,
       'users_points' => users_points,
       'everyones_average' => everyones_average,
@@ -95,15 +100,14 @@ class CumulativePoint
   def loop_cumulative_counts_by_day_and_make_final_result
     return_data = []
     users_points = 0
-    i = 0
     @everyones_cumulative_points_by_day.each do |date, points|
       users_points_increment = if_nil_return_zero(@users_points_by_day[date])
       unique_users_count =
         if_nil_return_zero(@cumulative_unique_users_count_by_day[date])
       everyones_average = points.to_f / unique_users_count
       users_points += users_points_increment
-      return_data.push(jsonize(date, users_points, everyones_average, unique_users_count, points))
-      i += 1
+      return_data.push(jsonize(date, users_points,
+                               everyones_average, unique_users_count, points))
     end
     return_data
   end

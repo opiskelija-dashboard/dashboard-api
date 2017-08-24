@@ -51,6 +51,6 @@ module DashboardBackend
     config.points_store_class = 'PointsStore'
     # For testing, you might like to set this a few orders of magnitude
     # smaller, especially if you use MockPointsStore as your point data source.
-    config.points_store_update_interval = 3600 # seconds
+    config.points_store_update_interval = 360000 # seconds
   end
 end

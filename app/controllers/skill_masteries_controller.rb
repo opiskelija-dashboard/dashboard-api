@@ -16,7 +16,7 @@ class SkillMasteriesController < ApplicationController
   def combined
     render json: { data: @skill_mastery.combined_skill_mastery }
   end
-
+ 
   private
 
   def set_up

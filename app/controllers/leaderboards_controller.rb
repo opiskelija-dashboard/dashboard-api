@@ -4,7 +4,9 @@ class LeaderboardsController < ApplicationController
   def initialize
     # Typically, point_source would be PointsStore, but for testing purposes
     # you might want to use MockPointsStore.
-    @point_source = Rails.configuration.points_store_class == 'MockPointsStore' ? MockPointsStore : PointsStore
+    config = Rails.configuration.points_store_class
+    @point_source =
+    config == 'MockPointsStore' ? MockPointsStore : PointsStore
   end
 
   # GET /leaderboard/course/:course_id?from=:from&to=:to
@@ -49,6 +51,7 @@ class LeaderboardsController < ApplicationController
         return
       end
     else
+
       render json: { data: leaderboard }
       return
     end

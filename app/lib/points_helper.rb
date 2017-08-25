@@ -62,12 +62,10 @@ class PointsHelper
     # TODO: UPDATE COMMENT: First, we chuck the users who submitted points into day-buckets.
     unique_users_list.each do |date, users|
       users.each do |user_id|
+        daybuckets[date] = [] if daybuckets[date].nil?
         if unique_users.include?(user_id)
-          daybuckets[date] = [] if daybuckets[date].nil?
           daybuckets[date].push(user_id)
           unique_users.delete(user_id)
-        else
-          daybuckets[date] = [] if daybuckets[date].nil?
         end
       end
     end
@@ -108,7 +106,7 @@ class PointsHelper
 
   # TODO: comment this
   def self.cumulativize(data)
-    return {} if data.nil? || data.empty?
+    return {} if (data.nil? || data.empty?)
     days = data.keys
     days.sort!
     cumulative_data = {}

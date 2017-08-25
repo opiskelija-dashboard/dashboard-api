@@ -25,7 +25,7 @@ describe CumulativePointsController do
       expect(json['data'].class).to eq(Array)
       # We know there is at least one point with UID=2, hence there must be
       # at least one point in here.
-      expect(json['data'].count > 0)
+      expect(!json['data'].empty?)
     end
 
     it 'returns day in form of Y-M-D dates' do

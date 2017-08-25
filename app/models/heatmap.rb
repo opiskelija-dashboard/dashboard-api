@@ -2,6 +2,8 @@
 # return calculated data based on PointsStores raw_data
 class Heatmap
   def initialize(course_id, token)
+    # Typically, point_source would be PointsStore, but for testing purposes
+    # you might want to use MockPointsStore.
     config = Rails.configuration.points_store_class
     @point_source =
       config == 'MockPointsStore' ? MockPointsStore : PointsStore
@@ -12,8 +14,8 @@ class Heatmap
     Rails.logger.debug("PointsStore didn't have points of course " +
       @course_id + ', fetching...')
 
-    @point_source.update_course_points(@course_id, token)
-    # if @point_source.course_point_update_needed?(@course_id)
+    @point_source.update_course_points(@course_id, token) if
+      @point_source.course_point_update_needed?(@course_id)
   end
 
   # GET /heatmap/courses/:course_id/all

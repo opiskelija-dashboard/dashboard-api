@@ -27,13 +27,6 @@ gem 'rack-test', require: 'rack/test'
 # Use Puma as the app server
 gem 'puma', '~> 3.0'
 
-# Use Rack CORS for handling Cross-Origin Resource Sharing (CORS),
-# making cross-origin AJAX possible
-gem 'rack-cors'
-
-# For serializing.
-gem 'active_model_serializers'
-
 group :development, :test do
   # Use RSpec for specs
   gem 'rspec-rails', '>= 3.5.0'

@@ -19,6 +19,10 @@ group :production do
   gem 'rails_12factor'
 end
 
+# Use Rack CORS for handling Cross-Origin Resource Sharing (CORS),
+# making cross-origin AJAX possible
+gem 'rack-cors'
+
 gem 'coveralls', require: false
 
 # Helps with testing API. Github: https://github.com/rack-test/rack-test

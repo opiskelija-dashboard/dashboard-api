@@ -20,7 +20,9 @@ class SkillMastery
     return if @point_source.has_course_points?(@course_id)
     Rails.logger.debug("PointsStore didn't have points of course #{@course_id},
     fetching...")
-    @point_source.update_course_points(@course_id, @token)
+
+    @point_source.update_course_points(@course_id, token) if
+      @point_source.course_point_update_needed?(@course_id)
   end
 
   def combined_skill_mastery

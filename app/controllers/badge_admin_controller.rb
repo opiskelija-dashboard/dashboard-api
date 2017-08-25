@@ -59,6 +59,9 @@ class BadgeAdminController < ApplicationController
     end
 
     badgedef = BadgeDef.new(params_to_badgedef_input)
+
+    badgedef = check_if_codes_are_active(badgedef)
+
     link_codes_to_def(badgedef, params['badge_codes'])
     # rubocop:disable Metrics/LineLength
     if badgedef.save
@@ -104,10 +107,6 @@ class BadgeAdminController < ApplicationController
   #   'course_id' => optional, 'global' => true/false, 'active' => true/false,
   #   'badge_codes' => [ array of badge-code-ids, mandatory]
   # }
-  # TODO: this
-  #          | ##### ####   #   ####
-  #          |   #   #  #  # #  #  #
-  #          V   #   #### ##### ####
   def update_badgedef
     bdid = params['badgedef_id']
     unless BadgeDef.exists?(bdid)
@@ -134,6 +133,8 @@ class BadgeAdminController < ApplicationController
                        'detail' => "BadgeDef #{bdid} failed to update" }] },
              status: 500 # Internal Server Error
     end
+
+    badgedef = check_if_codes_are_active(badgedef)
 
     badgedef.save
     link_codes_to_def(badgedef, params['badge_codes'])
@@ -167,6 +168,10 @@ class BadgeAdminController < ApplicationController
                        'details' => "BadgeCode #{bcid} failed to update" }] },
              status: 500 # Internal Server Error
     end
+
+    # Unless the updated badgecode is active, the BadgeDefs related to it will
+    # have their "active" attribute set to false.
+    badge_code_is_inactive(badgecode) unless badgecode.active
 
     code_ok = check_code_okayness_die_if_necessary(badgecode)
     return false unless code_ok # check_code_okayness... renders when not ok
@@ -271,28 +276,21 @@ class BadgeAdminController < ApplicationController
   # This assumes you've already checked that all necessary params exist.
   def params_to_badgedef_input
     input = {}
-    # rubocop:disable Metrics/LineLength
-    input['name'] = params['name'] unless params['name'].nil?
-    input['iconref'] = params['iconref'] unless params['iconref'].nil?
-    input['flavor_text'] = params['flavor_text'] unless params['flavor_text'].nil?
-    input['global'] = params['global'] unless params['global'].nil?
-    input['course_specific'] = params['course_specific'] unless params['course_specific'].nil?
-    input['course_id'] = params['course_id'] unless params['course_id'].nil?
-    input['active'] = params['active'] unless params['active'].nil?
-    # rubocop:enable Metrics/LineLength
+    parameters = %w[name iconref flavor_text global course_specific
+                    course_id active]
+    parameters.each do |p|
+      input[p] = params[p] unless params[p].nil?
+    end
     input
   end
 
   # This assumes you've already checked that all necessary params exist.
   def params_to_badgecode_input
     input = {}
-    # rubocop:disable Metrics/LineLength
-    input['name'] = params['name'] unless params['name'].nil?
-    input['description'] = params['description'] unless params['description'].nil?
-    input['code'] = params['code'] unless params['code'].nil?
-    input['active'] = params['active'] unless params['active'].nil?
-    input['course_points_only'] = params['course_points_only'] unless params['course_points_only'].nil?
-    # rubocop:enable Metrics/LineLength
+    parameters = %w[name description code active course_points_only]
+    parameters.each do |p|
+      input[p] = params[p] unless params[p].nil?
+    end
     input
   end
 
@@ -333,6 +331,26 @@ class BadgeAdminController < ApplicationController
       return false
     end
     true
+  end
+
+  # Checks if there is at least one BadgeCode with 'active' attribute with value
+  # false. If there is, returns badgedef with 'active' false. Otherwise returns
+  # badgedef unchanged.
+  def check_if_codes_are_active(badgedef)
+    active = badgedef.active
+    badgedef.badge_codes.each do |badgecode|
+      active = false if badgecode.active == false
+    end
+    badgedef.active = active
+    badgedef
+  end
+
+  # Change the 'active' attribute of each BadgeDef related to the given
+  # badge_code to be false.
+  def badge_code_is_inactive(badge_code)
+    BadgeDef.find_each do |bdef|
+      bdef.active = false if bdef.badge_codes.include?(badge_code.id)
+    end
   end
 
   def require_adminicity

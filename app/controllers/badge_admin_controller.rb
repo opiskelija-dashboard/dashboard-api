@@ -276,28 +276,21 @@ class BadgeAdminController < ApplicationController
   # This assumes you've already checked that all necessary params exist.
   def params_to_badgedef_input
     input = {}
-    # rubocop:disable Metrics/LineLength
-    input['name'] = params['name'] unless params['name'].nil?
-    input['iconref'] = params['iconref'] unless params['iconref'].nil?
-    input['flavor_text'] = params['flavor_text'] unless params['flavor_text'].nil?
-    input['global'] = params['global'] unless params['global'].nil?
-    input['course_specific'] = params['course_specific'] unless params['course_specific'].nil?
-    input['course_id'] = params['course_id'] unless params['course_id'].nil?
-    input['active'] = params['active'] unless params['active'].nil?
-    # rubocop:enable Metrics/LineLength
+    parameters = %w[name iconref flavor_text global course_specific
+                    course_id active]
+    parameters.each do |p|
+      input[p] = params[p] unless params[p].nil?
+    end
     input
   end
 
   # This assumes you've already checked that all necessary params exist.
   def params_to_badgecode_input
     input = {}
-    # rubocop:disable Metrics/LineLength
-    input['name'] = params['name'] unless params['name'].nil?
-    input['description'] = params['description'] unless params['description'].nil?
-    input['code'] = params['code'] unless params['code'].nil?
-    input['active'] = params['active'] unless params['active'].nil?
-    input['course_points_only'] = params['course_points_only'] unless params['course_points_only'].nil?
-    # rubocop:enable Metrics/LineLength
+    parameters = %w[name description code active course_points_only]
+    parameters.each do |p|
+      input[p] = params[p] unless params[p].nil?
+    end
     input
   end
 

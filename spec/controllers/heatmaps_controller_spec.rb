@@ -20,7 +20,7 @@ describe HeatmapsController do
     end
 
     it 'returns a date string and a float as first array elements in "data"' do
-      expect(json['data'].first[1].class).to eq(Fixnum)
+      expect(json['data'].first[1].class).to eq(Integer)
       expect(json['data'].first[0].class).to eq(String)
       # String =~ Regexp returns nil if there's no match,
       # index of start of match if there is a match.

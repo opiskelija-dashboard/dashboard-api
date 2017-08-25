@@ -16,7 +16,6 @@ class BadgeCalcController < ApplicationController
     h = test_loop(badgedefs, user_id, course_points)
     if h[:errors].empty?
       # Here, we'd create Badge objects and save them.
-      # For now, we'll just spit out what the user gets.
       save_badges(user_id, h[:to_award])
       render json: { data: h[:to_award] }, status: 200 # ok
     else
@@ -34,7 +33,6 @@ class BadgeCalcController < ApplicationController
     h = test_loop(badgedefs, user_id, toutes_les_points)
     if h[:errors].empty?
       # Here, we'd create Badge objects and save them.
-      # For now, we'll just spit out what the user gets.
       save_badges(user_id, h[:to_award])
       render json: { data: h[:to_award] }, status: 200 # ok
     else

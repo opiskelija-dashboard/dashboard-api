@@ -76,7 +76,7 @@ class MockPointsStore
   end
 
   # Also for use by BadgeHelper.
-  def self.all_fake_points
+  def self.all_points
     @fake_points
   end
 

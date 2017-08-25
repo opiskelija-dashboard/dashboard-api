@@ -287,14 +287,9 @@ class BadgeAdminController < ApplicationController
 
   # Preliminary syntax check with fake data
   def check_code_okayness_die_if_necessary(badgecode)
-    test_result = BadgeHelper.testForErrors(badgecode)
+    test_result = BadgeHelper.test_for_errors(badgecode)
     if test_result[:bugs]
-      error_objects = []
-      test_result[:errors].each do |e|
-        er_obj = { 'title' => 'Code error', 'description' => e[:title] }
-        error_objects.push(er_obj)
-      end
-      render json: { 'errors' => error_objects }, status: 400 # Bad Request
+      render json: { 'errors' => test_result[:errors] }, status: 400 # Bad Req.
       return false
     end
     true

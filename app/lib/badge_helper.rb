@@ -7,7 +7,7 @@ class BadgeHelper
   # { :bugs => true/false, :errors => [ array of Error objects ] }
   # where :errors are any that were caught, & :bugs is true if :errors
   # isn't empty, otherwise the BadgeCode is declared to be "bug-free".
-  def self.testForErrors(bc)
+  def self.test_for_errors(bc)
     fake_user = 2
     [899, 900, 901].each do |course_id|
       MockPointsStore.force_update_course_points(course_id)
@@ -24,18 +24,20 @@ class BadgeHelper
       bin_ding.eval(code, name)
     rescue ScriptError => e
       bugs = true
-      e_obj = { title: e.inspect, backtrace: e.backtrace }
       error_objects.push(e_obj)
     rescue StandardError => e
       bugs = true
-      e_obj = {
-        title: e.inspect, # Exception#inspect = Class + Message
-        backtrace: e.backtrace # array of strings
-      }
-      error_objects.push(e_obj)
+      error_objects.push(exception_to_error_object(e))
     end
     { :bugs => bugs, :errors => error_objects }
   end
 
+  private
+
+  def self.exception_to_error_object(e)
+    # Exception#inspect = class name and message,
+    # Exception#backtrace = array of strings, we'll take the first one.
+    { title: 'Code error', detail: "#{e.inspect}\n#{e.backtrace[0]}" }
+  end
 
 end

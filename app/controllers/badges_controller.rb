@@ -41,7 +41,7 @@ class BadgesController < ApplicationController
   def find_earned_in_course(course_id)
     earned_in_course = []
     Badge.find_each do |badge|
-      course_is_right = badge.course_id == course_id
+      course_is_right = badge.badge_def.course_id == course_id
       user_is_right = badge.user_id == @token.user_id.to_i
       earned_in_course << badge if course_is_right && user_is_right
     end
@@ -91,28 +91,32 @@ class BadgesController < ApplicationController
 
   # Filters given badges to not include irrelevant info
   def filter_earned(earned_badges)
-    earned_badges_info = {}
+    earned_badges_info = []
     unless earned_badges.nil?
       earned_badges.each do |badge|
-        earned_badges_info['name'] = badge.badge_def.name
-        earned_badges_info['iconref'] = badge.badge_def.iconref
-        earned_badges_info['flavor_text'] = badge.badge_def.flavor_text
-        earned_badges_info['awarded_at'] = badge.created_at
+        earned_badge_info = {}
+        earned_badge_info['name'] = badge.badge_def.name
+        earned_badge_info['iconref'] = badge.badge_def.iconref
+        earned_badge_info['flavor_text'] = badge.badge_def.flavor_text
+        earned_badge_info['awarded_at'] = badge.created_at
+        earned_badges_info << earned_badge_info
       end
     end
     earned_badges_info
   end
 
   # Filters given badge_defs to not include irrelevant info
-  def filter_unearned(unearned_in_course)
-    unearned_in_course_info = {}
-    unless unearned_in_course.nil?
-      unearned_in_course.each do |badgedef|
-        unearned_in_course_info['name'] = badgedef.name
-        unearned_in_course_info['flavor_text'] = badgedef.flavor_text
-        unearned_in_course_info['iconref'] = badgedef.iconref
+  def filter_unearned(badge_defs)
+    unearned_badges_info = []
+    unless badge_defs.nil?
+      badge_defs.each do |badgedef|
+        unearned_badge_info = {}
+        unearned_badge_info['name'] = badgedef.name
+        unearned_badge_info['flavor_text'] = badgedef.flavor_text
+        unearned_badge_info['iconref'] = badgedef.iconref
+        unearned_badges_info << unearned_badge_info
       end
     end
-    unearned_in_course_info
+    unearned_badges_info
   end
 end

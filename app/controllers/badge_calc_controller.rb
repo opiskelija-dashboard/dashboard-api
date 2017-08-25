@@ -17,6 +17,7 @@ class BadgeCalcController < ApplicationController
     if h[:errors].empty?
       # Here, we'd create Badge objects and save them.
       # For now, we'll just spit out what the user gets.
+      save_badges(user_id, h[:to_award])
       render json: { data: h[:to_award] }, status: 200 # ok
     else
       render json: { errors: h[:errors] }, status: 500 # internal server error
@@ -34,6 +35,7 @@ class BadgeCalcController < ApplicationController
     if h[:errors].empty?
       # Here, we'd create Badge objects and save them.
       # For now, we'll just spit out what the user gets.
+      save_badges(user_id, h[:to_award])
       render json: { data: h[:to_award] }, status: 200 # ok
     else
       render json: { errors: h[:errors] }, status: 500 # internal server error
@@ -90,6 +92,16 @@ class BadgeCalcController < ApplicationController
       @point_source.update_course_points(course_id, @token)
     end
     @point_source.course_points(course_id)
+  end
+
+  def save_badges(user_id, badge_def_ids)
+    badge_def_ids.each do |bdid|
+      Badge.new do |badge|
+        badge.user_id = user_id
+        badge.badge_def_id = bdid
+        badge.save
+      end
+    end
   end
 
 end

@@ -10,10 +10,10 @@
 BadgeCode.create(
   [
     { id: 1, name: 'Always true', description: 'What it says on the tin',
-      code: 'return true', created_by: 1, modified_by: 1, active: 1,
+      code: 'true', created_by: 1, modified_by: 1, active: 1,
       course_points_only: 0, created_at: Time.at(1), updated_at: Time.at(1) },
     { id: 2, name: 'Always false', description: 'What it says on the tin',
-      code: 'return false', created_by: 1, modified_by: 1, active: 1,
+      code: 'false', created_by: 1, modified_by: 1, active: 1,
       course_points_only: 0, created_at: Time.at(1), updated_at: Time.at(1) }
   ]
 )

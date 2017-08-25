@@ -73,7 +73,7 @@ class BadgeAdminController < ApplicationController
   # POST /badge-admin/badgecode
   # Expected POST body: JSON, thusly: {
   #   'name' => ..., 'description' => optional, 'code' => ...,
-  #   'bugs' => true/false, 'course_points_only' => true/false]
+  #   'active' => true/false, 'course_points_only' => true/false]
   # }
   # If 'code' doesn't have proper syntax, it will cause errors.
   # Input to test with: { "name": "Syntax Error", "code": "(",
@@ -86,7 +86,6 @@ class BadgeAdminController < ApplicationController
     badgecode = BadgeCode.new(params_to_badgecode_input)
     code_ok = check_code_okayness_die_if_necessary(badgecode)
     return false unless code_ok # Because we rendered, we must immediately quit.
-    badgecode.bugs = !code_ok
 
     # rubocop:disable Metrics/LineLength
     if badgecode.save
@@ -100,16 +99,49 @@ class BadgeAdminController < ApplicationController
   end
 
   # PUT /badge-admin/badgedef/:badgedef_id
+  # Expected POST body: JSON, thusly: {
+  #   'name' => ..., 'flavor_text' => optional, 'iconref' => optional,
+  #   'course_id' => optional, 'global' => true/false, 'active' => true/false,
+  #   'badge_codes' => [ array of badge-code-ids, mandatory]
+  # }
   # TODO: this
   #          | ##### ####   #   ####
   #          |   #   #  #  # #  #  #
   #          V   #   #### ##### ####
-  def update_badgedef; end
+  def update_badgedef
+    bdid = params['badgedef_id']
+    if !BadgeDef.exists?(bdid)
+      render json: { 'errors' => [{ 'title' => 'BadgeDef Not Found',
+        'detail' => "BadgeDef #{bdid} not found" }] }, status: 404 # Not Found
+        return false # Because we rendered, we must immediately quit.
+    end
+    badgedef = BadgeDef.find(bdid)
+
+    # check_badge_codes returns the string 'OK' if all BadgeCode IDs are real.
+    unless (fake_codes = check_badge_codes(params['badge_codes'])) == 'OK'
+      fake_badge_code_death(fake_codes)
+      return false
+    end
+
+    # Overwrite the badgedef found from the database with the input.
+    update_ok = badgedef.update(params_to_badgedef_input)
+
+    unless update_ok
+      render json: { 'errors' => [{ 'title' => 'BadgeDef update failed', 
+      'detail' => "BadgeDef #{bdid} failed to update" }] },
+      status: 500 # Internal Server Error
+    end
+
+    badgedef.save
+    link_codes_to_def(badgedef, params['badge_codes'])
+    render json: { 'data' => "BadgeDef #{bdid} updated" },
+           status: 200 # OK
+  end
 
   # PUT /badge-admin/badgecode/:badgecode_id
   # Expected POST body: JSON, thusly: {
   #   'name' => ..., 'description' => optional, 'code' => ...,
-  #   'bugs' => true/false, 'course_points_only' => true/false]
+  #   'active' => true/false, 'course_points_only' => true/false]
   # }
   # If 'code' doesn't have proper syntax, it will cause errors.
   def update_badgecode
@@ -132,8 +164,8 @@ class BadgeAdminController < ApplicationController
 
     code_ok = check_code_okayness_die_if_necessary(badgecode)
     return false unless code_ok # check_code_okayness... renders when not ok
-    badgecode.bugs = !code_ok
     badgecode.save
+    
     render json: { 'data' => "BadgeCode #{bcid} updated" },
            status: 200 # OK
   end
@@ -232,15 +264,17 @@ class BadgeAdminController < ApplicationController
 
   # This assumes you've already checked that all necessary params exist.
   def params_to_badgedef_input
-    {
-      'name' => params['name'],
-      'iconref' => params['iconref'],
-      'flavor_text' => params['flavor_text'],
-      'global' => params['global'],
-      'course_specific' => params['course_specific'] || !params['global'],
-      'course_id' => params['course_id'],
-      'active' => params['active']
-    }
+    input = {}
+    # rubocop:disable Metrics/LineLength
+    input['name'] = params['name'] unless params['name'].nil?
+    input['iconref'] = params['iconref'] unless params['iconref'].nil?
+    input['flavor_text'] = params['flavor_text'] unless params['flavor_text'].nil?
+    input['global'] = params['global'] unless params['global'].nil?
+    input['course_specific'] = params['course_specific'] unless params['course_specific'].nil?
+    input['course_id'] = params['course_id'] unless params['course_id'].nil?
+    input['active'] = params['active'] unless params['active'].nil?
+    # rubocop:enable Metrics/LineLength
+    input
   end
 
   # This assumes you've already checked that all necessary params exist.
@@ -250,7 +284,7 @@ class BadgeAdminController < ApplicationController
     input['name'] = params['name'] unless params['name'].nil?
     input['description'] = params['description'] unless params['description'].nil?
     input['code'] = params['code'] unless params['code'].nil?
-    input['bugs'] = params['bugs'] unless params['bugs'].nil?
+    input['active'] = params['active'] unless params['active'].nil?
     input['course_points_only'] = params['course_points_only'] unless params['course_points_only'].nil?
     # rubocop:enable Metrics/LineLength
     input
@@ -280,7 +314,7 @@ class BadgeAdminController < ApplicationController
       'name' => bcode.name,
       'description' => bcode.description,
       'code' => bcode.code,
-      'bugs' => bcode.bugs?,
+      'active' => bcode.active?,
       'course_specific' => bcode.course_points_only?
     }
   end
@@ -288,7 +322,7 @@ class BadgeAdminController < ApplicationController
   # Preliminary syntax check with fake data
   def check_code_okayness_die_if_necessary(badgecode)
     test_result = BadgeHelper.testForErrors(badgecode)
-    if test_result[:bugs]
+    if test_result[:active]
       error_objects = []
       test_result[:errors].each do |e|
         er_obj = { 'title' => 'Code error', 'description' => e[:title] }

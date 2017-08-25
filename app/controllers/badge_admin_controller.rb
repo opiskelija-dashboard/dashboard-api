@@ -62,7 +62,6 @@ class BadgeAdminController < ApplicationController
 
     badgedef = check_if_codes_are_active(badgedef)
 
-
     link_codes_to_def(badgedef, params['badge_codes'])
     # rubocop:disable Metrics/LineLength
     if badgedef.save
@@ -172,9 +171,7 @@ class BadgeAdminController < ApplicationController
 
     # Unless the updated badgecode is active, the BadgeDefs related to it will
     # have their "active" attribute set to false.
-    unless badgecode.active
-      badge_code_is_inactive(badgecode)
-    end 
+    badge_code_is_inactive(badgecode) unless badgecode.active
 
     code_ok = check_code_okayness_die_if_necessary(badgecode)
     return false unless code_ok # check_code_okayness... renders when not ok
@@ -364,9 +361,7 @@ class BadgeAdminController < ApplicationController
   # badge_code to be false.
   def badge_code_is_inactive(badge_code)
     BadgeDef.find_each do |bdef|
-      if bdef.badge_codes.include?(badge_code.id)
-        bdef.active = false
-      end
+      bdef.active = false if bdef.badge_codes.include?(badge_code.id)
     end
   end
 

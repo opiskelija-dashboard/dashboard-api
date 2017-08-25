@@ -63,13 +63,14 @@ class BadgeAdminController < ApplicationController
     badgedef = check_if_codes_are_active(badgedef)
 
     link_codes_to_def(badgedef, params['badge_codes'])
-    # rubocop:disable Metrics/LineLength
     if badgedef.save
-      render json: { 'data' => format_badgedef_for_output(badgedef) }, status: 200 # OK
+      render json: { 'data' => format_badgedef_for_output(badgedef) },
+             status: 200 # OK
     else
-      render json: { 'errors' => [{ 'title' => 'BadgeDef saving failed', 'description' => 'TODO: fill this in' }] }, status: 500 # Internal Server Error
+      render json: { 'errors' => [{ 'title' => 'BadgeDef saving failed',
+                                    'description' => 'TODO: fill this in' }] },
+             status: 500 # Internal Server Error
     end
-    # rubocop:enable Metrics/LineLength
     # TODO: logging
   end
 
@@ -90,14 +91,14 @@ class BadgeAdminController < ApplicationController
     code_ok = check_code_okayness_die_if_necessary(badgecode)
     return false unless code_ok # Because we rendered, we must immediately quit.
 
-    # rubocop:disable Metrics/LineLength
     if badgecode.save
       render json: { 'data' => format_badge_code_for_output(badgecode) },
              status: 200 # OK
     else
-      render json: { 'errors' => [{ 'title' => 'BadgeCode saving failed', 'description' => 'TODO: fill this in' }] }, status: 500 # Internal Server Error
+      render json: { 'errors' => [{ 'title' => 'BadgeCode saving failed',
+                                    'description' => 'TODO: fill this in' }] },
+             status: 500 # Internal Server Error
     end
-    # rubocop:enable Metrics/LineLength
     # TODO: logging
   end
 

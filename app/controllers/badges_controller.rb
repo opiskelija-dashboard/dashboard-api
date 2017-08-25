@@ -74,8 +74,8 @@ class BadgesController < ApplicationController
                            badge.badge_def
                          end
       end
-      earned_badges
     end
+    earned_badges
   end
 
   # Returns all global badges that are active

@@ -28,9 +28,9 @@ class PointsStore
 
   def self.course_point_update_needed?(course_id)
     update_time = @@update_times[course_id.to_s]
-    update_time = Time.at(0) if (update_time.nil?)
+    update_time = Time.at(0) if update_time.nil?
     t = update_time + UPDATE_INTERVAL  # Earliest time an update is necessary
-    return (t <=> Time.new) <= 0
+    (t <=> Time.new) <= 0
   end
 
 

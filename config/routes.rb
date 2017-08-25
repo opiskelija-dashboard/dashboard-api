@@ -23,6 +23,9 @@ Rails.application.routes.draw do
   get '/user-badges/global/earned', to: 'badges#earned_global'
   get '/user-badges/global/unearned', to: 'badges#unearned_global'
 
+  get '/calc-user-badges/course/:course_id', to: 'badge_calc#calc_user'
+  get '/calc-user-badges/global', to: 'badge_calc#calc_global'
+
   get '/badge-admin/badgedef/all', to: 'badge_admin#all_badgedefs'
   get '/badge-admin/badgedef/:badgedef_id', to: 'badge_admin#one_badgedef'
   get '/badge-admin/badgecode/all', to: 'badge_admin#all_badgecodes'

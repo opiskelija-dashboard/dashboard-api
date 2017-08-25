@@ -110,10 +110,12 @@ class BadgeAdminController < ApplicationController
   #          V   #   #### ##### ####
   def update_badgedef
     bdid = params['badgedef_id']
-    if !BadgeDef.exists?(bdid)
-      render json: { 'errors' => [{ 'title' => 'BadgeDef Not Found',
-        'detail' => "BadgeDef #{bdid} not found" }] }, status: 404 # Not Found
-        return false # Because we rendered, we must immediately quit.
+    unless BadgeDef.exists?(bdid)
+      render json:
+      { 'errors' => [{ 'title' => 'BadgeDef Not Found',
+                       'detail' => "BadgeDef #{bdid} not found" }] },
+             status: 404 # Not Found
+      return false # Because we rendered, we must immediately quit.
     end
     badgedef = BadgeDef.find(bdid)
 
@@ -127,9 +129,10 @@ class BadgeAdminController < ApplicationController
     update_ok = badgedef.update(params_to_badgedef_input)
 
     unless update_ok
-      render json: { 'errors' => [{ 'title' => 'BadgeDef update failed', 
-      'detail' => "BadgeDef #{bdid} failed to update" }] },
-      status: 500 # Internal Server Error
+      render json:
+      { 'errors' => [{ 'title' => 'BadgeDef update failed',
+                       'detail' => "BadgeDef #{bdid} failed to update" }] },
+             status: 500 # Internal Server Error
     end
 
     badgedef.save
@@ -146,9 +149,11 @@ class BadgeAdminController < ApplicationController
   # If 'code' doesn't have proper syntax, it will cause errors.
   def update_badgecode
     bcid = params['badgecode_id']
-    if !BadgeCode.exists?(bcid)
-      render json: { 'errors' => [{ 'title' => 'BadgeCode Not Found',
-        'detail' => "BadgeCode #{bcid} not found" }] }, status: 404 # Not Found
+    unless BadgeCode.exists?(bcid)
+      render json:
+      { 'errors' => [{ 'title' => 'BadgeCode Not Found',
+                       'detail' => "BadgeCode #{bcid} not found" }] },
+             status: 404 # Not Found
       return false # Because we rendered, we must immediately quit.
     end
     badgecode = BadgeCode.find(bcid)
@@ -157,15 +162,16 @@ class BadgeAdminController < ApplicationController
     update_ok = badgecode.update(params_to_badgecode_input)
 
     unless update_ok
-      render json: { 'errors' => [{ 'title' => 'BadgeCode update failed',
-        'details' => "BadgeCode #{bcid} failed to update" }] },
-        status: 500 # Internal Server Error
+      render json:
+      { 'errors' => [{ 'title' => 'BadgeCode update failed',
+                       'details' => "BadgeCode #{bcid} failed to update" }] },
+             status: 500 # Internal Server Error
     end
 
     code_ok = check_code_okayness_die_if_necessary(badgecode)
     return false unless code_ok # check_code_okayness... renders when not ok
     badgecode.save
-    
+
     render json: { 'data' => "BadgeCode #{bcid} updated" },
            status: 200 # OK
   end

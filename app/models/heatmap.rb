@@ -12,9 +12,8 @@ class Heatmap
     Rails.logger.debug("PointsStore didn't have points of course " +
       @course_id + ', fetching...')
 
-
-    @point_source.update_course_points(@course_id, token) if
-      @point_source.course_point_update_needed?(@course_id)
+    @point_source.update_course_points(@course_id, token)
+    # if @point_source.course_point_update_needed?(@course_id)
   end
 
   # GET /heatmap/courses/:course_id/all
@@ -28,7 +27,7 @@ class Heatmap
     points_by_day.each do |day, points|
       week = Date.iso8601(day.to_s).strftime('%G-W%V')
       users_this_week = unique_users_by_week[week].to_f
-      avg = if users_this_week == 0
+      avg = if users_this_week.zero?
               0
             else
               points / users_this_week
@@ -41,7 +40,8 @@ class Heatmap
   # GET /heatmap/courses/:course_id/current-user
   # OUTPUT hash {'date': 'users_points'}
   def current_user
-    current_users_points = PointsHelper.users_own_points(@point_source, @course_id, @token.user_id)
+    current_users_points =
+      PointsHelper.users_own_points(@point_source, @course_id, @token.user_id)
     points_by_day = PointsHelper.daywise_points(current_users_points)
     points_by_day
   end

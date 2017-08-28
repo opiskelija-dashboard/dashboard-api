@@ -2,7 +2,7 @@ class BadgesController < ApplicationController
   # GET /user-badges/course/:course_id/earned
   def earned_in_course
     course_id = params['course_id'].to_i
-    earned_badges = find_earned_in_course(course_id)
+    earned_badges = find_earned_in_course(course_id, true)
     earned_badges_info = filter_earned(earned_badges)
     render json: { 'data' => earned_badges_info }
   end
@@ -10,7 +10,7 @@ class BadgesController < ApplicationController
   # GET /user-badges/course/:course_id/unearned
   def unearned_in_course
     course_id = params['course_id'].to_i
-    earned_in_course = find_earned_in_course(course_id)
+    earned_in_course = find_earned_in_course(course_id, false)
     all_badges_in_course = find_all_in_course(course_id)
     unearned_in_course = all_badges_in_course - earned_in_course
     unearned_in_course_info = filter_unearned(unearned_in_course)
@@ -38,12 +38,18 @@ class BadgesController < ApplicationController
   private
 
   # Returns badges user has done in given course
-  def find_earned_in_course(course_id)
+  def find_earned_in_course(course_id, badges_instead_of_badge_defs)
     earned_in_course = []
     Badge.find_each do |badge|
       course_is_right = badge.badge_def.course_id == course_id
       user_is_right = badge.user_id == @token.user_id.to_i
-      earned_in_course << badge if course_is_right && user_is_right
+      if course_is_right && user_is_right
+        earned_in_course << if badges_instead_of_badge_defs
+                              badge
+                            else
+                              badge.badge_def
+                            end
+      end
     end
     earned_in_course
   end

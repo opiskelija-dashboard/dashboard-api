@@ -4,14 +4,16 @@
 class LeaderboardsController < ApplicationController
   # rubocop:disable Style/ClassVars
   # We have a reason to use this: caching of big data sets
-  # and this is cleaner than another singleton class.
+  # and this is cleaner than another singleton class, IMO.
   @@leaderboards = {}
   # rubocop:enable Style/ClassVars
 
   def initialize
     # Typically, point_source would be PointsStore, but for testing purposes
     # you might want to use MockPointsStore.
-    @point_source = Rails.configuration.points_store_class == 'MockPointsStore' ? MockPointsStore : PointsStore
+    config = Rails.configuration.points_store_class
+    @point_source =
+    config == 'MockPointsStore' ? MockPointsStore : PointsStore
   end
 
   # GET /leaderboard/course/:course_id?from=:from&to=:to
@@ -27,7 +29,7 @@ class LeaderboardsController < ApplicationController
       if recalculate_empty_leaderboard(course_id)
         get_range # recurse
       else
-        render json: { 'data' => [] }
+        render json: { data: [] }, status: 204 # No Content
         return
       end
     end
@@ -40,7 +42,7 @@ class LeaderboardsController < ApplicationController
       i += 1
     end
 
-    render json: { 'data' => interesting_subset }
+    render json: { data: interesting_subset }
   end
 
   # GET /leaderboard/course/:course_id/all
@@ -52,11 +54,11 @@ class LeaderboardsController < ApplicationController
       if recalculate_empty_leaderboard(course_id)
         get_all
       else
-        render json: { 'data' => [] }
+        render json: { data: [] }, status: 204 # No Content
         return
       end
     else
-      render json: { 'data' => leaderboard }
+      render json: { data: leaderboard }, status: 200 # OK
       return
     end
   end
@@ -73,7 +75,7 @@ class LeaderboardsController < ApplicationController
       if recalculate_empty_leaderboard(course_id)
         find_user
       else
-        render json: { 'data' => "not found: user_id #{user_id} is not in course_id #{course_id} because course is empty" }, status: 404
+        render json: { data: "not found: user_id #{user_id} is not in course_id #{course_id} because course is empty" }, status: 404 # Not Found
         return
       end
     end
@@ -87,13 +89,9 @@ class LeaderboardsController < ApplicationController
     end
 
     if searched_for.nil?
-      render json: {
-        'data' => "not found: user_id #{user_id} is not in course_id #{course_id}"
-      }, status: 404 # Not Found
-      return
+      render json: { data: "not found: user_id #{user_id} is not in course_id #{course_id}" }, status: 404 # Not Found
     else
-      render json: { 'data' => [searched_for] }
-      return
+      render json: { data: [searched_for] }
     end
     # rubocop:enable Style/IdenticalConditionalBranches
   end
@@ -110,7 +108,7 @@ class LeaderboardsController < ApplicationController
     course_id = params[:course_id].to_s
 
     unless @point_source.course_point_update_needed?(course_id)
-      render json: { 'data' => "Points of course #{course_id} not updated because data isn't too old yet" }, status: 200 # OK
+      render json: { data: "Points of course #{course_id} not updated because data isn't too old yet" }, status: 200 # OK
       # We can still recalculate the leaderboard from data we already have.
       recalculate_empty_leaderboard(course_id)
       return
@@ -122,16 +120,15 @@ class LeaderboardsController < ApplicationController
       course_points = @point_source.course_points(course_id)
       leaderboard = calculate_leaderboard(course_points)
       @@leaderboards[course_id] = leaderboard
-      render json: { 'data' => "OK, updated points of course #{course_id}" },
-             status: 200 # OK
+      render json: { data: "OK, updated points of course #{course_id}" },
+             status: 200
     else
       errors = update_attempt[:errors]
-      error = {
-        'title' => "Unable to update leaderboard for course #{course_id}",
-        'detail' => 'The update failed at the course-point-updating stage.'
-      }
-      errors.push(error)
-      render json: { 'errors' => errors }, status: 500 # server error
+      errors.push(
+        title: "Unable to update leaderboard for course #{course_id}",
+        detail: 'The update failed at the course-point-updating stage.'
+      )
+      render json: { errors: errors }, status: 500 # Server error
     end
   end
 
@@ -142,14 +139,14 @@ class LeaderboardsController < ApplicationController
 
     course_points = @point_source.course_points(course_id)
 
-    if !course_points.nil? && !course_points.empty?
+    if course_points.nil? || course_points.empty?
+      Rails.logger.debug("Couldn't recalculate @@leaderboards[#{course_id.inspect}] as there is no point data in the point store")
+      return false
+    else
       leaderboard = calculate_leaderboard(course_points)
       @@leaderboards[course_id] = leaderboard
       Rails.logger.debug("Recalculated @@leaderboards[#{course_id.inspect}]")
       return true
-    else
-      Rails.logger.debug("Couldn't recalculate @@leaderboards[#{course_id.inspect}] as there is no point data in the point store")
-      return false
     end
   end
 
@@ -194,15 +191,11 @@ class LeaderboardsController < ApplicationController
     while i < max
       j = i + 1
       tuple = point_user_tuples[i]
-      leaderboard_row = {
-        'index' => j,
-        'points' => tuple[0],
-        'user_id' => tuple[1]
-      }
+      leaderboard_row = { index: j, points: tuple[0], user_id: tuple[1] }
       leaderboard.push(leaderboard_row)
       i += 1
     end
+
     leaderboard
   end
-  # rubocop:enable Metrics/LineLength
 end

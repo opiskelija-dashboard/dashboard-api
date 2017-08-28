@@ -1,9 +1,7 @@
 require 'spec_helper'
-require 'jwt'
 
 # With CoursePointsController we can specifically test our (Mock)?PointStores
 describe CoursePointsController do
-
   context 'when valid JWT token is provided' do
     before do
       jwt_secret = Rails.configuration.jwt_secret
@@ -17,13 +15,13 @@ describe CoursePointsController do
       authstring = "Bearer " + valid_jwt_token
 
       header "Authorization", authstring
+
       get '/course-points/900/update'
     end
 
     it 'responds with a 200 status' do
       expect(last_response.status).to eq 200
     end
-
   end
 
   context 'when invalid JWT token is provided' do
@@ -39,6 +37,7 @@ describe CoursePointsController do
       authstring = "Bearer " + valid_jwt_token
 
       header "Authorization", authstring
+
       get '/course-points/900/update'
     end
 
@@ -56,5 +55,4 @@ describe CoursePointsController do
       expect(last_response.status).to eq 401
     end
   end
-
 end

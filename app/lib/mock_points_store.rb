@@ -103,7 +103,7 @@ class MockPointsStore
     while weeks > 0
       points_this_week = Random.rand(4..16)
       while points_this_week > 0
-        point_name = '%02d_%02d' % [weeks, points_this_week]
+        point_name = format('%02d_%02d', weeks, points_this_week)
         fake_point_names.push(point_name)
         points_this_week -= 1
       end

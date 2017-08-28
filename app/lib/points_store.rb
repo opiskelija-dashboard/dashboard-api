@@ -8,7 +8,6 @@ class PointsStore
   #     'course_id' => 214,
   #     'id' => 1273255,
   #     'user_id' => 12057
-  #     # in the future:
   #     'created_at' => '2017-08-10T15:03:05+0300'
   # }}
 

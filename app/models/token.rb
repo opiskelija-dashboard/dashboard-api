@@ -1,45 +1,59 @@
+require 'jwt'
+
 class Token
-  require 'jwt'
+
+  # Fields/accessor methods:
+  # username
+  # tmc_token
+  # user_id
+  # admin?
+  # expires
+  # jwt
+  # errors?
+  # errors
+  # valid?
+  # tested?
 
   JWT_HASH_ALGO = 'HS256'
-  @@jwt_secret = Rails.configuration.jwt_secret;
-  @@verify_tmc_creds = Rails.configuration.jwt_verify_tmc_credentials;
+  @@jwt_secret = Rails.configuration.jwt_secret
+  @@verify_tmc_creds = Rails.configuration.jwt_verify_tmc_credentials
 
   def initialize
     @errors = Array.new
     @invalidated = true
     @tested = false
-    @expires = 0
+    @expires = Time.at 0
     @username = ""
     @tmc_token = ""
     @tmc_user_id = -1
+    @is_tmc_admin = false
     @jwt = ""
   end
-
+  
   def self.new_from_credentials(username, tmc_access_token)
     token = Token.new
     token.initialize_from_credentials(username, tmc_access_token)
     return token
   end
-
+  
   def self.new_from_jwt_string(jwt)
     token = Token.new
     token.initialize_from_jwt_string(jwt)
     return token
   end
-
+  
   def initialize_from_credentials(username, tmc_access_token, verify_creds = @@verify_tmc_creds)
     @username = username
     @tmc_token = tmc_access_token
     @expires = Time.now + 86400
     @tested = false
     @invalidated = false
-
     if (verify_creds)
       verification_result = verify_given_credentials(@username, @tmc_token)
       @tested = true  # We tested it. Whether it's valid is a different matter.
       if (verification_result[:success])
         @tmc_user_id = verification_result[:user_id]
+        @is_tmc_admin = verification_result[:is_admin]
       else
         # We invalidate the token when it was checked for validity but didn't
         # pass the check. We don't invalidate it if it wasn't supposed to be
@@ -73,20 +87,21 @@ class Token
       @username = token_payload["tmcusr"]
       @tmc_token = token_payload["tmctok"]
       @tmc_user_id = token_payload["tmcuid"]
+      @is_tmc_admin = token_payload["tmcadm"].nil? ? false : token_payload["tmcadm"]
       @expires = token_payload["exp"]
       @invalidated = self.expired?
       @tested = @@verify_tmc_creds
     end
-  rescue JWT::VerificationError
-    error = {
-      "title" => "Token verification error",
-      "detail" => "The token is invalid, corrupt, or maliciously created, as it does not pass signature verification.",
-    }
-    @errors.push(error)
-    @invalidated = true
-    @tested = false
-  rescue JWT::DecodeError
-    error = {
+    rescue JWT::VerificationError
+      error = {
+        "title" => "Token verification error",
+        "detail" => "The token is invalid, corrupt, or maliciously created, as it does not pass signature verification.",
+      }
+      @errors.push(error)
+      @invalidated = true
+      @tested = false
+    rescue JWT::DecodeError
+      error = {
       "title" => "Malformed token",
       "detail" => "The JWT token given is incorrectly formed and cannot be decoded.",
     }
@@ -105,6 +120,10 @@ class Token
 
   def user_id
     @tmc_user_id
+  end
+
+  def admin?
+    @is_tmc_admin
   end
 
   def expires
@@ -161,8 +180,8 @@ class Token
     expired = (now <=> exp) > 0
     if (expired)
       error = {
-        :title => "Expired JWT token",
-        :detail => "The expiration time specified in the JWT token body has elapsed."
+      :title => "Expired JWT token",
+      :detail => "The expiration time specified in the JWT token body has elapsed."
       }
       # Let's not push a new identical error on the error pile.
       unless (@errors.include?(error))
@@ -180,6 +199,7 @@ class Token
       "tmcusr" => @username,
       "tmctok" => @tmc_token,
       "tmcuid" => @tmc_user_id,
+      "tmcadm" => @is_tmc_admin,
       "exp" => @expires.to_i
     }
     jwt_string = JWT.encode(token_payload, @@jwt_secret, JWT_HASH_ALGO)
@@ -188,24 +208,25 @@ class Token
 
 
   def verify_given_credentials(given_username, tmc_access_token)
-    api_call_result = HttpHelpers.tmc_api_get('/users/current', tmc_access_token);
+    api_call_result = HttpHelpers.tmc_api_get('/users/current', tmc_access_token)
 
     if (api_call_result[:success])
       response_hash = api_call_result[:body]
       # The TMC server would have returned JSON of this format:
       # {"id":1234,"username":"asdf","email":"asdf@asdf","administrator":false}
       # and response_hash would be the Ruby equivalent of this.
-      returned_username = response_hash['username'];
-      returned_user_id = response_hash['id']; # store this for later
+      returned_username = response_hash['username']
+      returned_user_id = response_hash['id']
+      returned_admin_bit = response_hash['administrator']
       if (given_username != returned_username)
         error = {
           "title" => "Credential verification failed",
           "detail" => "The given TMC credentials were tested, and the result was negative: the given username does not match the username returned by the TMC server."
         }
         @errors.push(error)
-        return { success: false, user_id: -1};
+        return { success: false, user_id: -1, is_admin: false}
       else
-        return { success: true, user_id: returned_user_id};
+        return { success: true, user_id: returned_user_id, is_admin: returned_admin_bit}
       end
     else
       error = {
@@ -213,7 +234,7 @@ class Token
         "detail" => "Verification of the given TMC credentials failed when accessing the TMC server. (Perhaps the given TMC access token is invalid.) Server response: " + api_call_result[:code] + "\n" + api_call_result[:body]
       }
       @errors.push(error)
-      return { success: false, user_id: -1};
+      return { success: false, user_id: -1, is_admin: false }
     end
   end
 

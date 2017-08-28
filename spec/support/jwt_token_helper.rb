@@ -20,11 +20,11 @@ module JwtTokenHelper
     jwt_hash_algo = 'HS256'
     two_minutes_ago = expiration_date
 
-    token_body = {'tmcusr' => 'username', 'tmctok' => '243f6a8885a308d3', 
+    token_body = {'tmcusr' => 'username', 'tmctok' => '243f6a8885a308d3',
                   'tmcuid' => 2, 'exp' => two_minutes_ago}
 
     token = JWT.encode(token_body, jwt_secret, jwt_hash_algo)
-    
+
     header "Authorization", "Bearer #{token}"
   end
 end

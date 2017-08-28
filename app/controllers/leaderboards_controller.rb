@@ -1,5 +1,12 @@
+# rubocop:disable Metrics/LineLength
+# (There are many render lines with long error messages; individually
+#  turning this off for each of them is messy.)
 class LeaderboardsController < ApplicationController
+  # rubocop:disable Style/ClassVars
+  # We have a reason to use this: caching of big data sets
+  # and this is cleaner than another singleton class, IMO.
   @@leaderboards = {}
+  # rubocop:enable Style/ClassVars
 
   def initialize
     # Typically, point_source would be PointsStore, but for testing purposes
@@ -22,7 +29,7 @@ class LeaderboardsController < ApplicationController
       if recalculate_empty_leaderboard(course_id)
         get_range # recurse
       else
-        render json: { data: [] }
+        render json: { data: [] }, status: 204 # No Content
         return
       end
     end
@@ -47,18 +54,19 @@ class LeaderboardsController < ApplicationController
       if recalculate_empty_leaderboard(course_id)
         get_all
       else
-        render json: { data: [] }
+        render json: { data: [] }, status: 204 # No Content
         return
       end
     else
-
-      render json: { data: leaderboard }
+      render json: { data: leaderboard }, status: 200 # OK
       return
     end
   end
 
   # GET /leaderboard/course/:course_id/whereis/:user_id
   def find_user
+    # rubocop:disable Style/IdenticalConditionalBranches
+    # Rails is a bitch when it comes to render statements and returning.
     course_id = params['course_id']
     user_id = params['user_id']
 
@@ -67,7 +75,7 @@ class LeaderboardsController < ApplicationController
       if recalculate_empty_leaderboard(course_id)
         find_user
       else
-        render json: { data: "not found: user_id #{user_id} is not in course_id #{course_id}" }
+        render json: { data: "not found: user_id #{user_id} is not in course_id #{course_id} because course is empty" }, status: 404 # Not Found
         return
       end
     end
@@ -81,10 +89,11 @@ class LeaderboardsController < ApplicationController
     end
 
     if searched_for.nil?
-      render json: { data: "not found: user_id #{user_id} is not in course_id #{course_id}" }
+      render json: { data: "not found: user_id #{user_id} is not in course_id #{course_id}" }, status: 404 # Not Found
     else
       render json: { data: [searched_for] }
     end
+    # rubocop:enable Style/IdenticalConditionalBranches
   end
 
   # GET /leaderboard/course/:courseid/whereis/current
@@ -99,7 +108,7 @@ class LeaderboardsController < ApplicationController
     course_id = params[:course_id].to_s
 
     unless @point_source.course_point_update_needed?(course_id)
-      render json: { data: "Points of course #{course_id} not updated because data isn't too old yet" }, status: 200 # Ok
+      render json: { data: "Points of course #{course_id} not updated because data isn't too old yet" }, status: 200 # OK
       # We can still recalculate the leaderboard from data we already have.
       recalculate_empty_leaderboard(course_id)
       return
@@ -111,7 +120,8 @@ class LeaderboardsController < ApplicationController
       course_points = @point_source.course_points(course_id)
       leaderboard = calculate_leaderboard(course_points)
       @@leaderboards[course_id] = leaderboard
-      render json: { data: "OK, updated points of course #{course_id}" }, status: 200
+      render json: { data: "OK, updated points of course #{course_id}" },
+             status: 200
     else
       errors = update_attempt[:errors]
       errors.push(

@@ -1,7 +1,7 @@
 # Controls API-calls from routes to Heatmap
 class HeatmapsController < ApplicationController
   # GET /heatmap/courses/:course_id/all
-  def everyones_points_average
+  def get_all
     course_id = params['course_id']
     if course_id.nil?
       render json: error_missing_required_course_id, status: 400 # bad request
@@ -13,7 +13,7 @@ class HeatmapsController < ApplicationController
   end
 
   # GET /heatmap/courses/:course_id/current-user
-  def current_users_points
+  def get_current_user
     course_id = params['course_id']
     if course_id.nil?
       render json: error_missing_required_course_id_current_user,

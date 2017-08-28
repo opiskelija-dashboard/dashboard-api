@@ -19,6 +19,9 @@ group :production do
   gem 'rails_12factor'
 end
 
+# Checkstyle ruby-rubocop. Github: https://github.com/bbatsov/rubocop
+gem 'rubocop', require: false
+
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS),
 # making cross-origin AJAX possible
 gem 'rack-cors'
@@ -58,6 +61,3 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
 # JSON Web Tokens for "sessions"
 gem 'jwt'
-
-# For ruby styles
-gem 'rubocop', '~> 0.49.1', require: false

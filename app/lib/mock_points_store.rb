@@ -54,6 +54,7 @@ class MockPointsStore
       @update_times[course_id] = Time.new
       @fake_points[course_id] = generate_fake_points(course_id)
       CalculatedPointsStore.update_calculated_course_points(course_id)
+      CalculatedPointsStore.init_all(course_id)
     else
       success = false
       # rubocop:disable Metrics/LineLength

@@ -21,22 +21,7 @@ class Heatmap
   # GET /heatmap/courses/:course_id/all
   # OUTPUT hash {'date': 'everyones_average_points'}
   def everyones_points_average
-    everyones_points = PointsHelper.all_course_points(@point_source, @course_id)
-    points_by_day = PointsHelper.daywise_points(everyones_points)
-    unique_users_by_week = PointsHelper.unique_users_by_week(everyones_points)
-
-    daily_average = {}
-    points_by_day.each do |day, points|
-      week = Date.iso8601(day.to_s).strftime('%G-W%V')
-      users_this_week = unique_users_by_week[week].to_f
-      avg = if users_this_week.zero?
-              0
-            else
-              points / users_this_week
-            end
-      daily_average[day] = avg.round(0)
-    end
-    daily_average
+    CalculatedPointsStore.daily_average_for_heatmap(@course_id)
   end
 
   # GET /heatmap/courses/:course_id/current-user

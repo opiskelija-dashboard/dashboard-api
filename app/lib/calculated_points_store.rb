@@ -35,5 +35,60 @@ class CalculatedPointsStore
 		end
 		daily_average
 	end
+
+	def self.daily_average_for_cumulative(course_id)
+    init_all(course_id)
+	end
 	
+  # Initializes data for return:
+  # First gets raw_points from PointsStore and then
+  # modifies that data for calculation needs
+  def self.init_all(course_id)
+    init_raw_points(course_id)
+    init_daywise_points
+    init_unique_users_count_by_day
+    init_cumulative_arrays
+  end
+
+  # Get raw_points to instance variables
+  def self.init_raw_points(course_id)
+    config = Rails.configuration.points_store_class
+		point_source =
+      config == 'MockPointsStore' ? MockPointsStore : PointsStore
+    @@raw_everyones_points =
+      PointsHelper.all_course_points(point_source, course_id)
+  end
+
+  # Uses @raw_points and initialize daywise hashes to instance variables
+  def self.init_daywise_points
+    @@everyones_points_by_day =
+      PointsHelper.daywise_points(@@raw_everyones_points)
+  end
+
+  # Uses @raw_points and initialize hashes of unique users
+  # to instance variables
+  def self.init_unique_users_count_by_day
+    all_unique_users = PointsHelper.unique_users_globally(@@raw_everyones_points)
+    @@unique_users_count_by_day =
+      PointsHelper.new_unique_users_per_day(@@raw_everyones_points,
+                                            all_unique_users)
+  end
+
+  # Uses @points_by_day hashes and makes cumulative versions of them
+  # to instance variables
+  def self.init_cumulative_arrays
+    @@everyones_cumulative_points_by_day =
+      PointsHelper.cumulativize(@@everyones_points_by_day)
+    @@cumulative_unique_users_count_by_day =
+      PointsHelper.cumulativize(@@unique_users_count_by_day)
+  end
+
+  def self.everyones_cumulative_points_by_day
+    @@everyones_cumulative_points_by_day
+  end
+  
+  def self.cumulative_unique_users_count_by_day
+    @@cumulative_unique_users_count_by_day
+  end
+  
 end

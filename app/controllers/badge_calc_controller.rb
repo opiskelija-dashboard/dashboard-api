@@ -65,7 +65,8 @@ class BadgeCalcController < ApplicationController
     awarded_bd_ids = user_badges.map { |b| b.badge_def_id }
 
     all_course_badgedefs = BadgeDef.where(course_specific: true,
-                                          course_id: course_id)
+                                          course_id: course_id,
+                                          active: true)
     all_bd_ids = all_course_badgedefs.map { |bd| bd.id }
     unawarded_bd_ids = all_bd_ids - awarded_bd_ids
 
@@ -76,7 +77,8 @@ class BadgeCalcController < ApplicationController
     user_badges = Badge.where(user_id: user_id)
     awarded_bd_ids = user_badges.map { |b| b.badge_def_id }
 
-    all_badgedef_ids = BadgeDef.where(global: true).map { |bd| bd.id }
+    all_badgedef_ids = BadgeDef.where(global: true,
+                                      active: true).map { |bd| bd.id }
     unawarded_bd_ids = all_badgedef_ids - awarded_bd_ids
 
     unawarded_badgedefs = BadgeDef.find(unawarded_bd_ids)

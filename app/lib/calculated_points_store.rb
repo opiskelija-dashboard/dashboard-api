@@ -16,7 +16,10 @@ class CalculatedPointsStore
 	# GET /heatmap/courses/:course_id/all
 	# OUTPUT hash {'date': 'everyones_average_points'}
 	def self.everyones_points_average(course_id)
-		everyones_points = PointsHelper.all_course_points(PointsStore, course_id)
+		config = Rails.configuration.points_store_class
+		point_source =
+      config == 'MockPointsStore' ? MockPointsStore : PointsStore
+		everyones_points = PointsHelper.all_course_points(point_source, course_id)
 		points_by_day = PointsHelper.daywise_points(everyones_points)
 		unique_users_by_week = PointsHelper.unique_users_by_week(everyones_points)
 		daily_average = {}

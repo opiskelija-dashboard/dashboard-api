@@ -95,6 +95,7 @@ class MockPointsStore
   # This is just a laundry list method, no use in breaking it up
   # and spreading it out.
   def self.generate_fake_points(course_id)
+    Rails.logger.debug("Generating fake points for course #{course_id}")
     today = Time.now.to_date
     course_start_time = (today - (4 * 7)).to_time.to_i # Date#- subtracts days.
     # course_end_time = (today + (2 * 7)).to_time.to_i # Date#+ adds days.

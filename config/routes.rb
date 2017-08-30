@@ -15,7 +15,6 @@ Rails.application.routes.draw do
   get '/leaderboard/course/:course_id/all', to: 'leaderboards#get_all'
   get '/leaderboard/course/:course_id/whereis/current', to: 'leaderboards#find_current_user'
   get '/leaderboard/course/:course_id/whereis/:user_id', to: 'leaderboards#find_user'
-  get '/leaderboard/course/:course_id/update', to: 'leaderboards#update_points'
 
   get '/heatmap/courses/:course_id/all', to: 'heatmaps#get_all'
   get '/heatmap/courses/:course_id/current-user', to: 'heatmaps#get_current_user'

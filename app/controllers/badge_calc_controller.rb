@@ -12,7 +12,7 @@ class BadgeCalcController < ApplicationController
     course_id = params[:course_id].to_s
     course_points = @point_source.course_points_update_if_necessary(course_id, @token)
     user_points = course_points.find_all { |cp| cp['awarded_point']['user_id'] == @token.user_id }
-    exercise_stuff = fetch_exercises(course_id, @token.tmc_token)
+    exercise_stuff = ExerciseFetcher.fetch_exercises(course_id, @token)
     if !exercise_stuff[:success]
       render json: { errors: exercise_stuff[:errors] },
              status: 500 # internal server error
@@ -73,27 +73,4 @@ class BadgeCalcController < ApplicationController
       end
     end
   end
-
-  def fetch_exercises(course_id, tmc_token)
-    endpoint = '/courses/' + course_id + '/exercises'
-    Rails.logger.debug("Fetching all exercises from #{endpoint}")
-    resp = HttpHelpers.tmc_api_get(endpoint, tmc_token)
-
-    errors = []
-    data = []
-    if resp[:success]
-      Rails.logger.debug('Done fetching')
-      data = resp[:body]
-      success = true
-    else
-      Rails.logger.debug("Fetch didn't work. Server response: #{resp.inspect}")
-      errors.push({
-        'title' => "Unable to fetch/update exercises of course #{course_id}",
-        'detail' => "Queried #{endpoint}: (#{resp[:code]}) #{resp[:body]}"
-      })
-      success = false
-    end
-    { success: success, errors: errors, data: data }
-  end
-
 end

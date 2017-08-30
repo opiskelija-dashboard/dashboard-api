@@ -10,18 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170825120546) do
+ActiveRecord::Schema.define(version: 20170830094126) do
 
   create_table "badge_codes", force: :cascade do |t|
-    t.string   "name",                               null: false
+    t.string   "name",                          null: false
     t.string   "description"
-    t.string   "code",                               null: false
+    t.string   "code",                          null: false
     t.integer  "created_by"
     t.integer  "modified_by"
-    t.boolean  "active",             default: false
-    t.boolean  "course_points_only", default: true
-    t.datetime "created_at",                         null: false
-    t.datetime "updated_at",                         null: false
+    t.boolean  "active",        default: false
+    t.boolean  "course_points", default: true
+    t.datetime "created_at",                    null: false
+    t.datetime "updated_at",                    null: false
+    t.boolean  "user_points"
+    t.boolean  "exercises"
   end
 
   create_table "badge_codes_defs", id: false, force: :cascade do |t|
@@ -32,16 +34,14 @@ ActiveRecord::Schema.define(version: 20170825120546) do
   end
 
   create_table "badge_defs", force: :cascade do |t|
-    t.string   "name",                            null: false
+    t.string   "name",                        null: false
     t.string   "iconref"
     t.string   "flavor_text"
     t.integer  "made_by"
-    t.boolean  "active",          default: false
-    t.boolean  "course_specific", default: true
-    t.boolean  "global",          default: false
+    t.boolean  "active",      default: false
     t.integer  "course_id"
-    t.datetime "created_at",                      null: false
-    t.datetime "updated_at",                      null: false
+    t.datetime "created_at",                  null: false
+    t.datetime "updated_at",                  null: false
   end
 
   create_table "badges", force: :cascade do |t|

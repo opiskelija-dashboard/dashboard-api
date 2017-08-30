@@ -76,6 +76,7 @@ class Token
   def initialize_from_jwt_string(jwt)
     @jwt_string = jwt
 
+    Rails.logger.debug("jwt_secret = " + @@jwt_secret)
     decoded_token = JWT.decode(jwt, @@jwt_secret, true, {:algorithm => JWT_HASH_ALGO})
     # The format of what JWT.decode returns:
     # [ {"tmcusr"=>  "username", "tmctok"=>"ABCD", "exp"=>1500000000},

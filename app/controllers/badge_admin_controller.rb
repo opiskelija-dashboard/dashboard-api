@@ -40,20 +40,17 @@ class BadgeAdminController < ApplicationController
   # POST /badge-admin/badgedef
   # Expected POST body: JSON, thusly: {
   #   'name' => ..., 'flavor_text' => optional, 'iconref' => optional,
-  #   'course_id' => optional, 'global' => true/false, 'active' => true/false,
+  #   'course_id' => ..., 'active' => true/false,
   #   'badge_codes' => [ array of badge-code-ids, mandatory]
   # }
-  # If 'global' is true, 'course_id' is ignored, but if 'global' is false,
-  # 'course_id' is required to be a valid TMC course-id, otherwise problems
-  # will occur down the line.
   # Returns the created BadgeDef, including its ID.
   def new_badgedef
-    can_continue = check_required_fields(%w[name badge_codes])
-    # Rails will die and complain otherwise, since we rendered.
+    can_continue = check_required_fields(%w[name badge_codes course_id])
+    # TODO: replace "return false" with proper error message
     return false unless can_continue
 
     # check_badge_codes returns the string 'OK' if all BadgeCode IDs are real.
-    unless (fake_codes = check_badge_codes(params['badge_codes'])) == 'OK'
+    unless (fake_codes = check_badge_codes_existence(params['badge_codes'])) == 'OK'
       fake_badge_code_death(fake_codes)
       return false
     end
@@ -77,11 +74,11 @@ class BadgeAdminController < ApplicationController
   # POST /badge-admin/badgecode
   # Expected POST body: JSON, thusly: {
   #   'name' => ..., 'description' => optional, 'code' => ...,
-  #   'active' => true/false, 'course_points_only' => true/false]
+  #   'active' => true/false, 'course_points' => true/false,
+  #   'user_points' => true/false, 'exercises' => true/false
   # }
   # If 'code' doesn't have proper syntax, it will cause errors.
-  # Input to test with: { "name": "Syntax Error", "code": "(",
-  # "course_specific": false, "global": true }
+  # Input to test with: { "name": "Syntax Error", "code": "(" }
   def new_codedef
     can_continue = check_required_fields(%w[name code])
     # TODO: replace "return false" with proper error message
@@ -105,10 +102,14 @@ class BadgeAdminController < ApplicationController
   # PUT /badge-admin/badgedef/:badgedef_id
   # Expected POST body: JSON, thusly: {
   #   'name' => ..., 'flavor_text' => optional, 'iconref' => optional,
-  #   'course_id' => optional, 'global' => true/false, 'active' => true/false,
+  #   'course_id' => ..., 'active' => true/false,
   #   'badge_codes' => [ array of badge-code-ids, mandatory]
   # }
   def update_badgedef
+    can_continue = check_required_fields(%w[name badge_codes course_id])
+    # TODO: replace "return false" with proper error message
+    return false unless can_continue
+    
     bdid = params['badgedef_id']
     unless BadgeDef.exists?(bdid)
       render json:
@@ -120,7 +121,7 @@ class BadgeAdminController < ApplicationController
     badgedef = BadgeDef.find(bdid)
 
     # check_badge_codes returns the string 'OK' if all BadgeCode IDs are real.
-    unless (fake_codes = check_badge_codes(params['badge_codes'])) == 'OK'
+    unless (fake_codes = check_badge_codes_existence(params['badge_codes'])) == 'OK'
       fake_badge_code_death(fake_codes)
       return false
     end
@@ -135,8 +136,9 @@ class BadgeAdminController < ApplicationController
              status: 500 # Internal Server Error
     end
 
-    badgedef = check_if_codes_are_active(badgedef)
+    badgedef = check_that_codes_are_active(badgedef)
 
+    # TODO: check save errors
     badgedef.save
     link_codes_to_def(badgedef, params['badge_codes'])
     render json: { 'data' => "BadgeDef #{bdid} updated" },
@@ -146,10 +148,15 @@ class BadgeAdminController < ApplicationController
   # PUT /badge-admin/badgecode/:badgecode_id
   # Expected POST body: JSON, thusly: {
   #   'name' => ..., 'description' => optional, 'code' => ...,
-  #   'active' => true/false, 'course_points_only' => true/false]
+  #   'active' => true/false, 'course_points' => true/false,
+  #   'user_points' => true/false, 'exercises' => true/false
   # }
   # If 'code' doesn't have proper syntax, it will cause errors.
   def update_badgecode
+    can_continue = check_required_fields(%w[name code])
+    # TODO: replace "return false" with proper error message
+    return false unless can_continue
+
     bcid = params['badgecode_id']
     unless BadgeCode.exists?(bcid)
       render json:
@@ -172,7 +179,7 @@ class BadgeAdminController < ApplicationController
 
     # Unless the updated badgecode is active, the BadgeDefs related to it will
     # have their "active" attribute set to false.
-    badge_code_is_inactive(badgecode) unless badgecode.active
+    inactivate_badgedefs(badgecode) unless badgecode.active
 
     code_ok = check_code_okayness_die_if_necessary(badgecode)
     return false unless code_ok # check_code_okayness... renders when not ok
@@ -239,7 +246,7 @@ class BadgeAdminController < ApplicationController
   # When we are given an array of badge codes IDs, we first want to check
   # if all of those IDs refer to existent badge codes. This will either return
   # the string "OK", or an array of badge code IDs that were *not* real.
-  def check_badge_codes(badge_code_ids)
+  def check_badge_codes_existence(badge_code_ids)
     fakes = []
     badge_code_ids.each do |bcid|
       fakes.push(bcid) unless BadgeCode.exists?(bcid)
@@ -277,8 +284,7 @@ class BadgeAdminController < ApplicationController
   # This assumes you've already checked that all necessary params exist.
   def params_to_badgedef_input
     input = {}
-    parameters = %w[name iconref flavor_text global course_specific
-                    course_id active]
+    parameters = %w[name iconref flavor_text course_id active]
     parameters.each do |p|
       input[p] = params[p] unless params[p].nil?
     end
@@ -288,7 +294,8 @@ class BadgeAdminController < ApplicationController
   # This assumes you've already checked that all necessary params exist.
   def params_to_badgecode_input
     input = {}
-    parameters = %w[name description code active course_points_only]
+    parameters = %w[name description code active course_points user_points
+                    exercises]
     parameters.each do |p|
       input[p] = params[p] unless params[p].nil?
     end
@@ -305,8 +312,6 @@ class BadgeAdminController < ApplicationController
       'flavor_text' => badgedef.flavor_text,
       'course_id' => badgedef.course_id,
       'active' => badgedef.active?,
-      'global' => badgedef.global?,
-      'course_specific' => badgedef.course_specific?,
       'badge_codes' => code_ids
     }
   end
@@ -320,7 +325,9 @@ class BadgeAdminController < ApplicationController
       'description' => bcode.description,
       'code' => bcode.code,
       'active' => bcode.active?,
-      'course_specific' => bcode.course_points_only?
+      'course_points' => bcode.course_points?,
+      'user_points' => bcode.user_points?,
+      'exercises' => bcode.exercises?
     }
   end
 
@@ -337,7 +344,7 @@ class BadgeAdminController < ApplicationController
   # Checks if there is at least one BadgeCode with 'active' attribute with value
   # false. If there is, returns badgedef with 'active' false. Otherwise returns
   # badgedef unchanged.
-  def check_if_codes_are_active(badgedef)
+  def check_that_codes_are_active(badgedef)
     active = badgedef.active
     badgedef.badge_codes.each do |badgecode|
       active = false if badgecode.active == false
@@ -348,7 +355,7 @@ class BadgeAdminController < ApplicationController
 
   # Change the 'active' attribute of each BadgeDef related to the given
   # badge_code to be false.
-  def badge_code_is_inactive(badge_code)
+  def inactivate_badgedefs(badge_code)
     BadgeDef.find_each do |bdef|
       bdef.active = false if bdef.badge_codes.include?(badge_code.id)
     end

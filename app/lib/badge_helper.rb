@@ -9,12 +9,11 @@ class BadgeHelper
   # isn't empty, otherwise the BadgeCode is declared to be "bug-free".
   def self.test_for_errors(bc)
     fake_user = 2
-    [899, 900, 901].each do |course_id|
-      MockPointsStore.force_update_course_points(course_id)
-    end
-    all_points = MockPointsStore.all_points
-    course_points = MockPointsStore.course_points(900)
-    bin_ding = bc.appropriate_binding(fake_user, course_points, all_points)
+    fake_course = 900
+    MockPointsStore.force_update_course_points(fake_course)
+    course_points = MockPointsStore.course_points(fake_course)
+    # TODO fetch/calculate exerices, isolate user_points from course_points
+    bin_ding = bc.appropriate_binding(fake_user, course_points, user_points, exercises)
     bugs = false
     error_objects = []
     begin
@@ -36,14 +35,14 @@ class BadgeHelper
   # points. It is assumed that this subroutine will be called in a context
   # that assures that only course-specific badgedefs will be matched with
   # course-specific data; and likewise with s/course-specific/global/.
-  def self.evaluate_badgedef(badgedef, user_id, points)
+  def self.evaluate_badgedef(badgedef, user_id, course_points, user_points, exercises)
     badge_codes = badgedef.badge_codes
     eval_results = {}
     ok = {}
     errors = []
 
     badge_codes.each do |bc|
-      foo = evaluate_badge_code(bc, user_id, points)
+      foo = evaluate_badge_code(bc, user_id, course_points, user_points, exercises)
       ok[bc.id] = foo[:ok]
       eval_results[bc.id] = foo[:val]
       foo[:errors].each { |e|
@@ -69,9 +68,9 @@ class BadgeHelper
   # catching any Script- or StandardErrors the code throws. Returns a
   # hash like this:
   # { :ok => t/f, :val => eval result, :errors => [any that were found] }
-  def self.evaluate_badge_code(bc, user_id, points)
+  def self.evaluate_badge_code(bc, user_id, course_points, user_points, exercises)
     # Rails.logger.debug("Evaluating BadgeCode #{bc.id}")
-    bin_ding = bc.appropriate_binding(user_id, points, points)
+    bin_ding = bc.appropriate_binding(user_id, course_points, user_points, exercises)
     error_objects = []
     ok = true
     begin

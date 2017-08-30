@@ -46,4 +46,5 @@ Rails.application.configure do
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 
   config.jwt_secret = "secret"
+  config.points_store_class = 'MockPointsStore'
 end

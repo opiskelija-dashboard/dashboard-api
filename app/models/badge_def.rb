@@ -12,8 +12,6 @@ class BadgeDef < ApplicationRecord
   # flavor_text
   # made_by
   # active
-  # course_specific
-  # global
   # course_id
   # badge_codes   --virtual field, return array of BadgeCodes
 end

@@ -43,21 +43,22 @@ BadgeCode.create(
   course_points: false, user_points: true, exercises: false,
   created_at: Time.at(1),  updated_at: Time.at(1), code:
   "
-  points_in_order = data[:user_points].sort_by{|p| p['awarded_point']['awarded_at']}
+  points_in_order = data[:user_points].sort_by{|p| p['awarded_point']['created_at']}
   result = false
   reset = false
   count = 0
   days = 0
-  date = points_in_order.first['awarded_point']['awarded_at']
+  date = points_in_order.first['awarded_point']['created_at'].to_date
   points_in_order.each do |point|
-    if date == point['awarded_point']['awarded_at']
+    if date == point['awarded_point']['created_at'].to_date
       count += 1
       reset = false
     else
-      count = 0
-      date = point['awarded_point']['awarded_at']
-      days = 0 if reset
+      count = 1
+      dayskip = point['awarded_point']['created_at'].to_date - 1 != date
+      days = 0 if reset || dayskip
       reset = true
+      date = point['awarded_point']['created_at'].to_date
     end
     days +=1 if count == 3
     if days == 5

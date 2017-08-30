@@ -45,6 +45,7 @@ Rails.application.configure do
   # routes, locales, etc. This feature depends on the listen gem.
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 
-  config.jwt_secret = "secret"
+  config.jwt_secret = 'secret'
   config.points_store_class = 'MockPointsStore'
+  config.fetch_real_exercises = false
 end

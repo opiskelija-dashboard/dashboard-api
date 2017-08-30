@@ -21,10 +21,10 @@ class BadgeCode < ApplicationRecord
     data[:user_points] = user_points if self.user_points?
     data[:course_points] = course_points if self.course_points?
     data[:exercises] = exercises if self.exercises?
-    do_binding(user_id, data)
+    badgecode_binding(user_id, data)
   end
 
-  def do_binding(user_id, data)
+  def badgecode_binding(user_id, data)
     binding
   end
 end

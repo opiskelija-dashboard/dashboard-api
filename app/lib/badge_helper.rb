@@ -20,7 +20,7 @@ class BadgeHelper
       code = bc.code
       name = bc.name
       # Second parameter becomes the "filename" in any error reports.
-      bin_ding.eval(code, name)
+      bin_ding.eval(code, "<#{name}>")
     rescue ScriptError => e
       bugs = true
       error_objects.push(exception_to_error_object(e))
@@ -46,8 +46,8 @@ class BadgeHelper
       ok[bc.id] = foo[:ok]
       eval_results[bc.id] = foo[:val]
       foo[:errors].each { |e|
-        e[:bcid] = bc.id;
-        e[:bdid] = badgedef.id;
+        e[:badgecode_id] = bc.id;
+        e[:badgedef_id] = badgedef.id;
         errors.push(e)
       }
     end
@@ -76,7 +76,7 @@ class BadgeHelper
     begin
       code = bc.code
       name = bc.name
-      evalval = bin_ding.eval(code, name)
+      evalval = bin_ding.eval(code, "<#{name}>")
     rescue ScriptError => e
       error_objects.push(exception_to_error_object(e))
       ok = false
@@ -93,7 +93,9 @@ class BadgeHelper
 
   def self.exception_to_error_object(e)
     # Exception#inspect = class name and message.
-    { title: 'Code error', detail: "#{e.inspect}" }
+    # Exception#backtrace = array of strings, each string being a backtrace line
+    { title: 'BadgeCode code error',
+      detail: "#{e.inspect}\n#{e.backtrace.first}" }
   end
 
 end

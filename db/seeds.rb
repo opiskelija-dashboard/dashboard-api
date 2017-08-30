@@ -48,21 +48,23 @@ BadgeCode.create(
   reset = false
   count = 0
   days = 0
-  date = points_in_order.first['awarded_point']['awarded_at']
-  points_in_order.each do |point|
-    if date == point['awarded_point']['awarded_at']
-      count += 1
-      reset = false
-    else
-      count = 0
-      date = point['awarded_point']['awarded_at']
-      days = 0 if reset
-      reset = true
-    end
-    days +=1 if count == 3
-    if days == 5
-      result = true
-      break
+  unless points_in_order.empty?
+    date = points_in_order.first['awarded_point']['awarded_at']
+    points_in_order.each do |point|
+      if date == point['awarded_point']['awarded_at']
+        count += 1
+        reset = false
+      else
+        count = 0
+        date = point['awarded_point']['awarded_at']
+        days = 0 if reset
+        reset = true
+      end
+      days +=1 if count == 3
+      if days == 5
+        result = true
+        break
+      end
     end
   end
   result

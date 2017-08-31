@@ -38,42 +38,27 @@ class CumulativePoint
   def init_all
     init_raw_points
     init_daywise_points
-    init_unique_users_count_by_day
-    init_cumulative_arrays
+    init_data_for_everyone
   end
 
   # Get raw_points to instance variables
   def init_raw_points
     @raw_users_points =
       PointsHelper.users_own_points(@point_source, @course_id, @token.user_id)
-    @raw_everyones_points =
-      PointsHelper.all_course_points(@point_source, @course_id)
   end
 
   # Uses @raw_points and initialize daywise hashes to instance variables
   def init_daywise_points
     @users_points_by_day = PointsHelper.daywise_points(@raw_users_points)
-    @everyones_points_by_day =
-      PointsHelper.daywise_points(@raw_everyones_points)
   end
 
-  # Uses @raw_points and initialize hashes of unique users
-  # to instance variables
-  def init_unique_users_count_by_day
-    all_unique_users = PointsHelper.unique_users_globally(@raw_everyones_points)
-    @unique_users_count_by_day =
-      PointsHelper.new_unique_users_per_day(@raw_everyones_points,
-                                            all_unique_users)
-  end
-
-  # Uses @points_by_day hashes and makes cumulative versions of them
-  # to instance variables
-  def init_cumulative_arrays
+  def init_data_for_everyone
     @everyones_cumulative_points_by_day =
-      PointsHelper.cumulativize(@everyones_points_by_day)
+      CalculatedPointsStore.everyones_cumulative_points_by_day
     @cumulative_unique_users_count_by_day =
-      PointsHelper.cumulativize(@unique_users_count_by_day)
+      CalculatedPointsStore.cumulative_unique_users_count_by_day
   end
+  
 
   def if_nil_return_zero(value)
     return 0 if value.nil?

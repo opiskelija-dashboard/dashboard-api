@@ -58,6 +58,8 @@ class PointsStore
       Rails.logger.debug('Done fetching')
       @@points_store[course_id] = resp[:body]
       @@update_times[course_id] = Time.new
+      CalculatedPointsStore.update_calculated_course_points(course_id)
+      CalculatedPointsStore.init_all(course_id)
       success = true
     else
       Rails.logger.debug("Fetch didn't work. Server response: #{resp.inspect}")

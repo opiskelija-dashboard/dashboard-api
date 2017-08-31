@@ -10,7 +10,7 @@ class CumulativePoint
 
     @course_id = course_id
     @token = token
-    return unless @point_source.has_course_points?(@course_id)
+    #return unless @point_source.has_course_points?(@course_id) # ??????? why?
 
     # rubocop:disable Metrics/LineLength
     Rails.logger.debug("PointsStore didn't have points of course #{@course_id}, fetching...")

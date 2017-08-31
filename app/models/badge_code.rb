@@ -9,24 +9,22 @@ class BadgeCode < ApplicationRecord
   # created_by
   # modified_by
   # bugs
-  # course_points_only
+  # course_points
+  # user_points
+  # exercises
   # created_at
   # updated_at
   # badge_defs   --virtual field, returns array of BadgeDefs
 
-  def appropriate_binding(user_id, course_points, all_points)
-    if self.course_points_only?
-      course_specific_binding(user_id, course_points)
-    else
-      global_binding(user_id, all_points)
-    end
+  def appropriate_binding(user_id, course_points, user_points, exercises)
+    data = {}
+    data[:user_points] = user_points if self.user_points?
+    data[:course_points] = course_points if self.course_points?
+    data[:exercises] = exercises if self.exercises?
+    badgecode_binding(user_id, data)
   end
 
-  def global_binding(user_id, all_points)
-    binding
-  end
-
-  def course_specific_binding(user_id, course_points)
+  def badgecode_binding(user_id, data)
     binding
   end
 end

@@ -25,6 +25,15 @@ class PointsStore
     @@points_store[course_id]
   end
 
+  def self.course_points_update_if_necessary(course_id, jwt_token)
+    no_points = !has_course_points?(course_id)
+    stale_points = course_point_update_needed?(course_id)
+    if no_points || stale_points
+      update_course_points(course_id, jwt_token)
+    end
+    course_points(course_id)
+  end
+
   def self.course_point_update_needed?(course_id)
     update_time = @@update_times[course_id.to_s]
     update_time = Time.at(0) if update_time.nil?

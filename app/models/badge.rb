@@ -6,6 +6,6 @@ class Badge < ApplicationRecord
   # badge_def_id
   # user_id
   # course_id
-  # created_at          
-  # updated_at 
+  # created_at
+  # updated_at
 end

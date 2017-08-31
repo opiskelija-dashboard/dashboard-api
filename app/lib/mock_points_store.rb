@@ -9,8 +9,7 @@ class MockPointsStore
   #     'submission_id' => 1062559,
   #     'course_id' => 214,
   #     'id' => 1273255,
-  #     'user_id' => 12057
-  #     # pending a pull request:
+  #     'user_id' => 15653,
   #     'created_at' => '2017-08-10T15:03:05+0300'
   # }}
 
@@ -31,6 +30,15 @@ class MockPointsStore
   def self.course_points(course_id)
     course_id = course_id.to_s
     @fake_points[course_id]
+  end
+
+  def self.course_points_update_if_necessary(course_id, jwt_token)
+    no_points = !has_course_points?(course_id)
+    stale_points = course_point_update_needed?(course_id)
+    if no_points || stale_points
+      update_course_points(course_id, jwt_token)
+    end
+    course_points(course_id)
   end
 
   def self.course_point_update_needed?(course_id)
@@ -88,6 +96,7 @@ class MockPointsStore
   # This is just a laundry list method, no use in breaking it up
   # and spreading it out.
   def self.generate_fake_points(course_id)
+    Rails.logger.debug("Generating fake points for course #{course_id}")
     today = Time.now.to_date
     course_start_time = (today - (4 * 7)).to_time.to_i # Date#- subtracts days.
     # course_end_time = (today + (2 * 7)).to_time.to_i # Date#+ adds days.
@@ -99,6 +108,7 @@ class MockPointsStore
       fake_users.push(fake_user_id)
       users_to_have_in_this_course -= 1
     end
+    fake_users.push(2)
 
     fake_point_names = []
     weeks = 6

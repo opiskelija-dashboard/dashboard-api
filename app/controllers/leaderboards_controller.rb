@@ -25,9 +25,10 @@ class LeaderboardsController < ApplicationController
     # TODO: check that `from` and `to` are numbers and that `from` <= `to`
 
     leaderboard = @@leaderboards[course_id]
-    if leaderboard.nil?
+    if leaderboard.nil? || leaderboard.empty?
       if recalculate_empty_leaderboard(course_id)
         get_range # recurse
+        return # So we don't continue execution with empty data.
       else
         render json: { data: [] }, status: 204 # No Content
         return
@@ -104,40 +105,12 @@ class LeaderboardsController < ApplicationController
     find_user
   end
 
-  def update_points
-    course_id = params[:course_id].to_s
-
-    unless @point_source.course_point_update_needed?(course_id)
-      render json: { data: "Points of course #{course_id} not updated because data isn't too old yet" }, status: 200 # OK
-      # We can still recalculate the leaderboard from data we already have.
-      recalculate_empty_leaderboard(course_id)
-      return
-    end
-
-    update_attempt = @point_source.update_course_points(course_id, @token)
-
-    if update_attempt[:success]
-      course_points = @point_source.course_points(course_id)
-      leaderboard = calculate_leaderboard(course_points)
-      @@leaderboards[course_id] = leaderboard
-      render json: { data: "OK, updated points of course #{course_id}" },
-             status: 200
-    else
-      errors = update_attempt[:errors]
-      errors.push(
-        title: "Unable to update leaderboard for course #{course_id}",
-        detail: 'The update failed at the course-point-updating stage.'
-      )
-      render json: { errors: errors }, status: 500 # Server error
-    end
-  end
-
   private
 
   def recalculate_empty_leaderboard(course_id)
     Rails.logger.debug("@@leaderboards[#{course_id.inspect}]: attempting recalculation")
 
-    course_points = @point_source.course_points(course_id)
+    course_points = @point_source.course_points_update_if_necessary(course_id, @token)
 
     if course_points.nil? || course_points.empty?
       Rails.logger.debug("Couldn't recalculate @@leaderboards[#{course_id.inspect}] as there is no point data in the point store")

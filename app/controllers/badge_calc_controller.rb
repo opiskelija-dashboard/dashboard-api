@@ -18,7 +18,7 @@ class BadgeCalcController < ApplicationController
              status: 500 # internal server error
       return false
     else
-      exercises = exercise_stuff[:exercises]
+      exercises = exercise_stuff[:data]
     end
     user_id = @token.user_id
     badgedefs = find_badgedefs_to_test(user_id, course_id)
@@ -40,7 +40,8 @@ class BadgeCalcController < ApplicationController
     errors = []
     badgedefs.each do |badgedef|
       Rails.logger.debug("Evaluating BadgeDef #{badgedef.id}, user #{user_id}")
-      rezult = BadgeHelper.evaluate_badgedef(badgedef, user_id, course_points, user_points, exercises)
+      rezult = BadgeHelper.evaluate_badgedef(badgedef, user_id, course_points,
+                                             user_points, exercises)
       if rezult[:ok]
         to_award.push(badgedef) if rezult[:give_badge]
       else
@@ -61,7 +62,7 @@ class BadgeCalcController < ApplicationController
     all_bd_ids = all_course_badgedefs.map { |bd| bd.id }
     unawarded_bd_ids = all_bd_ids - awarded_bd_ids
 
-    unawarded_course_badgedefs = BadgeDef.find(unawarded_bd_ids)
+    BadgeDef.find(unawarded_bd_ids)
   end
 
   def save_badges(user_id, badge_defs)

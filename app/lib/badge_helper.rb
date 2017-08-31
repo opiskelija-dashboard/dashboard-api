@@ -1,5 +1,4 @@
 class BadgeHelper
-
   # This will take a BadgeCode object, give it some fake but plausible
   # data, get a binding with its #appropriate_binding method,  run the
   # BadgeCode's code in the context of that binding, and check for any
@@ -12,7 +11,7 @@ class BadgeHelper
     fake_course = 900
     MockPointsStore.force_update_course_points(fake_course)
     course_points = MockPointsStore.course_points(fake_course)
-    # TODO fetch/calculate exerices, isolate user_points from course_points
+    # TODO, fetch/calculate exerices, isolate user_points from course_points
     bin_ding = bc.appropriate_binding(fake_user, course_points, user_points, exercises)
     bugs = false
     error_objects = []
@@ -28,7 +27,7 @@ class BadgeHelper
       bugs = true
       error_objects.push(exception_to_error_object(e))
     end
-    { :bugs => bugs, :errors => error_objects }
+    { bugs: bugs, errors: error_objects }
   end
 
   # On the 'points' parameter: this can either be course points or all
@@ -45,11 +44,11 @@ class BadgeHelper
       foo = evaluate_badge_code(bc, user_id, course_points, user_points, exercises)
       ok[bc.id] = foo[:ok]
       eval_results[bc.id] = foo[:val]
-      foo[:errors].each { |e|
-        e[:badgecode_id] = bc.id;
-        e[:badgedef_id] = badgedef.id;
+      foo[:errors].each do |e|
+        e[:badgecode_id] = bc.id
+        e[:badgedef_id] = badgedef.id
         errors.push(e)
-      }
+      end
     end
 
     all_ok = true

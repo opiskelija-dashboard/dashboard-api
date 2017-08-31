@@ -109,7 +109,7 @@ class BadgeAdminController < ApplicationController
     can_continue = check_required_fields(%w[name badge_codes course_id])
     # TODO: replace "return false" with proper error message
     return false unless can_continue
-    
+
     bdid = params['badgedef_id']
     unless BadgeDef.exists?(bdid)
       render json:

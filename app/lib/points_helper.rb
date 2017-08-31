@@ -106,7 +106,7 @@ class PointsHelper
 
   # TODO: comment this
   def self.cumulativize(data)
-    return {} if (data.nil? || data.empty?)
+    return {} if data.nil? || data.empty?
     days = data.keys
     days.sort!
     cumulative_data = {}

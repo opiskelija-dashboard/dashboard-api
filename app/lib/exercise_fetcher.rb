@@ -22,7 +22,7 @@ class ExerciseFetcher
       errors.push({
         'title' => "Unable to fetch/update exercises of course #{course_id}",
         'detail' => "Queried #{endpoint}: (#{resp[:code]}) #{resp[:body]}"
-      })
+                  })
       success = false
     end
     { success: success, errors: errors, data: data }
@@ -46,7 +46,7 @@ class ExerciseFetcher
 
   private
 
-  def self.fakex(id, name = nil, publ_time = 1,
+  def fakex(id, name = nil, publ_time = 1,
                  disabled = false, point_count = 1)
     six_digit_hex_string = '%06x' % Random.rand(65536 * 256)
     name = six_digit_hex_string.upcase if name.nil?

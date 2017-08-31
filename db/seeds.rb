@@ -20,28 +20,25 @@ BadgeCode.create(
   ]
 )
 BadgeCode.create(
-  id: 3, name: 'Tee 1 tehtävä', description: 'course specific', created_by: 0,
-  modified_by: 0, active: true, course_points: false, user_points: true,
-  exercises: false, created_at: Time.at(1),
-  updated_at: Time.at(1), code:
+  id: 3, name: 'Tee 1 tehtävä', created_by: 0, modified_by: 0, active: true,
+  course_points: false, user_points: true, exercises: false,
+  created_at: Time.at(1), updated_at: Time.at(1), code:
   "
   data[:user_points].size >= 1
   "
 )
 BadgeCode.create(
-  id: 4, name: 'Tee 100 tehtävää', description: 'course specific',
-  created_by: 0, modified_by: 0, active: true, course_points: false,
-  user_points: true, exercises: false, created_at: Time.at(1),
-  updated_at: Time.at(1), code:
+  id: 4, name: 'Tee 100 tehtävää', created_by: 0, modified_by: 0, active: true,
+  course_points: false, user_points: true, exercises: false,
+  created_at: Time.at(1), updated_at: Time.at(1), code:
   "
   data[:user_points].size >= 100
   "
 )
 BadgeCode.create(
-  id: 5, name: '5:nä peräkkäisenä päivänä 3 tehtävää',
-  description: 'course specific', created_by: 0,  modified_by: 0, active: true,
-  course_points: false, user_points: true, exercises: false,
-  created_at: Time.at(1),  updated_at: Time.at(1), code:
+  id: 5, name: '5:nä peräkkäisenä päivänä 3 tehtävää', created_by: 0,
+  modified_by: 0, active: true, course_points: false, user_points: true,
+  exercises: false, created_at: Time.at(1), updated_at: Time.at(1), code:
   "
   points_in_order = data[:user_points].sort_by{|p| p['awarded_point']['created_at']}
   result = false
@@ -71,6 +68,44 @@ BadgeCode.create(
   result
   "
 )
+BadgeCode.create(
+  id: 6, name: 'Tee 50 tehtävää', created_by: 0, modified_by: 0, active: true,
+  course_points: false, user_points: true, exercises: false,
+  created_at: Time.at(1), updated_at: Time.at(1), code:
+  "
+  data[:user_points].size >= 50
+  "
+)
+BadgeCode.create(
+  id: 7, name: 'Tee ekan viikon kaikki tehtävät', created_by: 0, modified_by: 0,
+  active: true, course_points: false, user_points: true, exercises: true,
+  created_at: Time.at(1), updated_at: Time.at(1), code:
+  "
+  ordered_exercises = data[:exercises].sort_by{|e| e['deadline']}
+  first_week_points = 0
+  first_week = ordered_exercises.first['deadline'].to_date.strftime('%G-%V')
+
+  ordered_exercises.each do |exer|
+    week = exer['deadline'].to_date.strftime('%G-%V')
+    if week == first_week
+      exer['available_points'].each do |apoint|
+        first_week_points += 1
+      end
+    end
+  end
+
+  all_done = false
+  user_points_first_week = 0
+  data[:user_points].each do |p|
+    week_point_was_awarded = p['awarded_point']['created_at'].to_date.strftime('%G-%V')
+    user_points_first_week += 1 if first_week == week_point_was_awarded
+  end
+  byebug
+
+  all_done = true if first_week_points == user_points_first_week
+  all_done
+  "
+)
 
 BadgeDef.create(
   id: 1, name: 'Achi 1 (always true)', created_at: Time.at(1),
@@ -97,6 +132,15 @@ BadgeDef.create(
   flavor_text: 'Tee 5:nä peräkkäisenä päivänä 3 tai enemmän tehtävää.',
   created_at: Time.at(1), updated_at: Time.at(1), active: true, course_id: 214
 )
+BadgeDef.create(
+  id: 7, name: 'Candy Shop', flavor_text: 'Tee 50 tehtävää',
+  created_at: Time.at(1), updated_at: Time.at(1), active: true, course_id: 214
+)
+BadgeDef.create(
+  id: 8, name: 'Rakettilähtö',
+  flavor_text: 'Tee ensimmäisen viikon kaikki tehtävät', created_at: Time.at(1),
+  updated_at: Time.at(1), active: true, course_id: 214
+)
 
 # Link the two BadgeCodes to our two BadgeDefs thusly:
 # BadgeDef 'Achi 1 (always true)' --- BadgeCode 1, 'Always true'
@@ -106,6 +150,8 @@ BadgeDef.create(
 # BadgeDef 'Cherry Popper' --- BadgeCode 3, 'Tee 1 tehtävä'
 # BadgeDef 'Centurion' --- BadgeCode 4, 'Tee 100 tehtävää'
 # BadgeDef 'Tasainen raataja' --- BadgeCode 5, '5:nä peräkkäisenä päivänä 3 tehtävää'
+# BadgeDef 'Candy Shop' --- BadgeCode 6, 'Tee 50 tehtävää'
+# BadgeDef 'Rakettilähtö' --- BadgeCode 7, 'Tee ekan viikon kaikki tehtävät'
 linked_already = BadgeDef.find(1).badge_codes.exists?(BadgeCode.find(1))
 BadgeDef.find(1).badge_codes << BadgeCode.find(1) unless linked_already
 
@@ -127,3 +173,8 @@ BadgeDef.find(5).badge_codes << BadgeCode.find(4) unless linked_already
 linked_already = BadgeDef.find(6).badge_codes.exists?(BadgeCode.find(5))
 BadgeDef.find(6).badge_codes << BadgeCode.find(5) unless linked_already
 
+linked_already = BadgeDef.find(7).badge_codes.exists?(BadgeCode.find(6))
+BadgeDef.find(7).badge_codes << BadgeCode.find(6) unless linked_already
+
+linked_already = BadgeDef.find(8).badge_codes.exists?(BadgeCode.find(7))
+BadgeDef.find(8).badge_codes << BadgeCode.find(7) unless linked_already

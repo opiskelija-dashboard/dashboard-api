@@ -13,9 +13,6 @@ describe LeaderboardsController do
       authstring = "Bearer " + valid_jwt_token
 
       header "Authorization", authstring
-      get '/leaderboard/course/900/update'
-      header "Authorization", authstring
-
       get '/leaderboard/course/900/all'
     end
 
@@ -49,8 +46,7 @@ describe LeaderboardsController do
       authstring = "Bearer " + valid_jwt_token
 
       header "Authorization", authstring
-
-      get '/leaderboard/course/900/update'
+      get '/leaderboard/course/900/all'
     end
 
     it 'responds with a 401 Unauthorized status' do

@@ -3,7 +3,7 @@ class BadgesController < ApplicationController
   def earned_in_course
     course_id = params['course_id'].to_i
     earned_badges = find_earned_in_course(course_id, true)
-    earned_badges_info = filter_earned(earned_badges)
+    earned_badges_info = format_earned_for_output(earned_badges)
     render json: { 'data' => earned_badges_info }
   end
 
@@ -13,7 +13,7 @@ class BadgesController < ApplicationController
     earned_in_course = find_earned_in_course(course_id, false)
     all_badges_in_course = find_all_in_course(course_id)
     unearned_in_course = all_badges_in_course - earned_in_course
-    unearned_in_course_info = filter_unearned(unearned_in_course)
+    unearned_in_course_info = format_unearened_for_output(unearned_in_course)
     render json: { 'data' => unearned_in_course_info }
   end
 
@@ -47,8 +47,8 @@ class BadgesController < ApplicationController
     all_badges_in_course
   end
 
-  # Filters given badges to not include irrelevant info
-  def filter_earned(earned_badges)
+  # Formats given badges to not include all info
+  def format_earned_for_output(earned_badges)
     earned_badges_info = []
     unless earned_badges.nil?
       earned_badges.each do |badge|
@@ -64,8 +64,8 @@ class BadgesController < ApplicationController
     earned_badges_info
   end
 
-  # Filters given badge_defs to not include irrelevant info
-  def filter_unearned(badge_defs)
+  # formats given badge_defs to not include all info
+  def format_unearened_for_output(badge_defs)
     unearned_badges_info = []
     unless badge_defs.nil?
       badge_defs.each do |badgedef|

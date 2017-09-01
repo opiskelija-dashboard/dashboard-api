@@ -35,6 +35,7 @@ class BadgeCalcController < ApplicationController
 
   private
 
+  # Loop that tests whether to give the user_id badges or not
   def test_loop(badgedefs, user_id, course_points, user_points, exercises)
     to_award = []
     errors = []
@@ -54,6 +55,7 @@ class BadgeCalcController < ApplicationController
     { to_award: to_award, errors: errors }
   end
 
+  # Finds badges the given user doesn't already have in the given course
   def find_badgedefs_to_test(user_id, course_id)
     user_badges = Badge.where(user_id: user_id)
     awarded_bd_ids = user_badges.map { |b| b.badge_def_id }
@@ -65,6 +67,7 @@ class BadgeCalcController < ApplicationController
     BadgeDef.find(unawarded_bd_ids)
   end
 
+  # Saves the given badge_defs to the user_id as badges
   def save_badges(user_id, badge_defs)
     badge_defs.each do |bdef|
       Badge.new do |badge|

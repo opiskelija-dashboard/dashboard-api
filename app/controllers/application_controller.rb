@@ -3,6 +3,8 @@ class ApplicationController < ActionController::API
 
   private
 
+  # Checks if the token is given correctly.
+  # Returns true if given token is valid and false in other cases.
   def authenticate_request
     token_string = unpack_token_from_header
 
@@ -31,6 +33,7 @@ class ApplicationController < ActionController::API
     end
   end
 
+  # Unpacks token from the header string if given correctly.
   def unpack_token_from_header
     if request.headers['Authorization'].present?
       header = request.headers['Authorization']

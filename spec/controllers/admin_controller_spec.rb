@@ -27,7 +27,6 @@ describe AdminController do
     it 'returns "admin" => false' do
       expect(json["admin"]).to be(false)
     end
-
   end
 
   context 'when valid administrator JWT token is provided' do
@@ -55,7 +54,6 @@ describe AdminController do
     it 'returns "admin" => true' do
       expect(json["admin"]).to be(true)
     end
-
   end
 
   context 'when invalid JWT token is provided' do
@@ -75,7 +73,5 @@ describe AdminController do
     it 'responds with a 401 Unauthorized status' do
       expect(last_response.status).to eq 401
     end
-
   end
-
 end

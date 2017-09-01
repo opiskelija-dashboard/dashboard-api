@@ -10,7 +10,7 @@ class CumulativePoint
 
     @course_id = course_id
     @token = token
-    return unless @point_source.has_course_points?(@course_id)
+    return if @point_source.has_course_points?(@course_id)
 
     # rubocop:disable Metrics/LineLength
     Rails.logger.debug("PointsStore didn't have points of course #{@course_id}, fetching...")
@@ -25,8 +25,8 @@ class CumulativePoint
   # Basically just returns PointsStores data in different format.
   # This format is required by the frontend, which prefers three
   # separate arrays instead of one single array of objects.
-  def date_point_average_object
-    init_all
+  def date_point_average_object(course_id)
+    init_all(course_id)
     loop_cumulative_counts_by_day_and_make_final_result
   end
 
@@ -35,10 +35,10 @@ class CumulativePoint
   # Initializes data for return:
   # First gets raw_points from PointsStore and then
   # modifies that data for calculation needs
-  def init_all
+  def init_all(course_id)
     init_raw_points
     init_daywise_points
-    init_data_for_everyone
+    init_data_for_everyone(course_id)
   end
 
   # Get raw_points to instance variables
@@ -52,11 +52,11 @@ class CumulativePoint
     @users_points_by_day = PointsHelper.daywise_points(@raw_users_points)
   end
 
-  def init_data_for_everyone
+  def init_data_for_everyone(course_id)
     @everyones_cumulative_points_by_day =
-      CalculatedPointsStore.everyones_cumulative_points_by_day
+      CalculatedPointsStore.everyones_cumulative_points_by_day(course_id)
     @cumulative_unique_users_count_by_day =
-      CalculatedPointsStore.cumulative_unique_users_count_by_day
+      CalculatedPointsStore.cumulative_unique_users_count_by_day(course_id)
   end
   
 

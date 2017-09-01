@@ -6,6 +6,7 @@ class TokensController < ApplicationController
 
     tmc_username = params[:tmc_username]
     tmc_access_token = params[:tmc_access_token]
+    course = params[:course]
 
     token = Token.new_from_credentials(tmc_username, tmc_access_token)
 
@@ -26,6 +27,8 @@ class TokensController < ApplicationController
       }, status: 401 # Unauthorized
       # rubocop:enable Metrics/LineLength
     else
+      PointsStore.update_course_points(course, token) if
+        PointsStore.course_point_update_needed?(course)
       render json: {
         'data' => {
           'token' => token.jwt,

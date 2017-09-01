@@ -2,6 +2,11 @@
 class CalculatedPointsStore
 
   @@calculated_points_store = {}
+  @@raw_everyones_points = {}
+  @@everyones_points_by_day = {}
+  @@unique_users_count_by_day = {}
+  @@everyones_cumulative_points_by_day = {}
+  @@cumulative_unique_users_count_by_day = {}
 
 	def self.update_calculated_course_points(course_id)
 		errors = []
@@ -45,9 +50,9 @@ class CalculatedPointsStore
   # modifies that data for calculation needs
   def self.init_all(course_id)
     init_raw_points(course_id)
-    init_daywise_points
-    init_unique_users_count_by_day
-    init_cumulative_arrays
+    init_daywise_points(course_id)
+    init_unique_users_count_by_day(course_id)
+    init_cumulative_arrays(course_id)
   end
 
   # Get raw_points to instance variables
@@ -55,40 +60,40 @@ class CalculatedPointsStore
     config = Rails.configuration.points_store_class
 		point_source =
       config == 'MockPointsStore' ? MockPointsStore : PointsStore
-    @@raw_everyones_points =
+    @@raw_everyones_points[course_id] =
       PointsHelper.all_course_points(point_source, course_id)
   end
 
   # Uses @raw_points and initialize daywise hashes to instance variables
-  def self.init_daywise_points
-    @@everyones_points_by_day =
-      PointsHelper.daywise_points(@@raw_everyones_points)
+  def self.init_daywise_points(course_id)
+    @@everyones_points_by_day[course_id] =
+      PointsHelper.daywise_points(@@raw_everyones_points[course_id])
   end
 
   # Uses @raw_points and initialize hashes of unique users
   # to instance variables
-  def self.init_unique_users_count_by_day
-    all_unique_users = PointsHelper.unique_users_globally(@@raw_everyones_points)
-    @@unique_users_count_by_day =
-      PointsHelper.new_unique_users_per_day(@@raw_everyones_points,
+  def self.init_unique_users_count_by_day(course_id)
+    all_unique_users = PointsHelper.unique_users_globally(@@raw_everyones_points[course_id])
+    @@unique_users_count_by_day[course_id] =
+      PointsHelper.new_unique_users_per_day(@@raw_everyones_points[course_id],
                                             all_unique_users)
   end
 
   # Uses @points_by_day hashes and makes cumulative versions of them
   # to instance variables
-  def self.init_cumulative_arrays
-    @@everyones_cumulative_points_by_day =
-      PointsHelper.cumulativize(@@everyones_points_by_day)
-    @@cumulative_unique_users_count_by_day =
-      PointsHelper.cumulativize(@@unique_users_count_by_day)
+  def self.init_cumulative_arrays(course_id)
+    @@everyones_cumulative_points_by_day[course_id] =
+      PointsHelper.cumulativize(@@everyones_points_by_day[course_id])
+    @@cumulative_unique_users_count_by_day[course_id] =
+      PointsHelper.cumulativize(@@unique_users_count_by_day[course_id])
   end
 
-  def self.everyones_cumulative_points_by_day
-    @@everyones_cumulative_points_by_day
+  def self.everyones_cumulative_points_by_day(course_id)
+    @@everyones_cumulative_points_by_day[course_id]
   end
   
-  def self.cumulative_unique_users_count_by_day
-    @@cumulative_unique_users_count_by_day
+  def self.cumulative_unique_users_count_by_day(course_id)
+    @@cumulative_unique_users_count_by_day[course_id]
   end
   
 end

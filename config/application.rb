@@ -40,13 +40,9 @@ module DashboardBackend
     # Configuration for our code
     config.tmc_api_base_address = 'https://tmc.mooc.fi/api/v8'
 
-    # Create a short, insecure secret for every new server instance.
-    # This is a step up from just using "secret", but still not crypto-
-    # graphically secure; in production we'd do this properly.
-    six_digit_hex_string = '%06x' % Random.rand(65536 * 256)
-    config.jwt_secret = six_digit_hex_string.upcase
-
-    #config.jwt_secret = 'secret'
+    # Use a proper key source for our JWT tokens' message authentication
+    # purposes.
+    config.jwt_secret = secrets.secret_key_base
 
     config.jwt_verify_tmc_credentials = true
 

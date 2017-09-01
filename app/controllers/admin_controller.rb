@@ -16,5 +16,4 @@ class AdminController < ApplicationController
     admin_bit = @token.admin?
     render json: { 'admin' => admin_bit }, status: 200 #OK
   end
-
 end

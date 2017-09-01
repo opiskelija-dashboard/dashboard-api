@@ -1,5 +1,7 @@
-# Controls API-calls from routes to Cumulative Point
+# Controls API-calls to Cumulative Point related.
 class CumulativePointsController < ApplicationController
+
+  # GET /cumulative-points/course/:course_id
   def show
     course_id = params['course_id']
     if course_id.nil?

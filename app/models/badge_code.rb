@@ -16,6 +16,7 @@ class BadgeCode < ApplicationRecord
   # updated_at
   # badge_defs   --virtual field, returns array of BadgeDefs
 
+  # Checks which data to give to the binding and then returns the binding
   def appropriate_binding(user_id, course_points, user_points, exercises)
     data = {}
     data[:user_points] = user_points if self.user_points?
@@ -24,6 +25,7 @@ class BadgeCode < ApplicationRecord
     badgecode_binding(user_id, data)
   end
 
+  # Creates the binding for testing the badge_codes
   def badgecode_binding(user_id, data)
     binding
   end

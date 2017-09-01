@@ -1,4 +1,4 @@
-# Controls API-calls to Skill Mastery related data.
+# Controls API-calls to Skill Mastery related.
 class SkillMasteriesController < ApplicationController
   before_action :set_up, only: %i[current_user all combined]
 
@@ -19,6 +19,7 @@ class SkillMasteriesController < ApplicationController
 
   private
 
+  # Handles nil course_id while setting up @skill_mastery.
   def set_up
     course_id = params['course_id']
     if course_id.nil?

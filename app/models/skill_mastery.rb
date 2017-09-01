@@ -28,8 +28,8 @@ class SkillMastery
     combined
   end
 
-  # Calculates current users skill mastery percentages (points awarded by certain
-  # categories/statement labels).
+  # Calculates current users skill mastery percentages (points awarded by
+  # certain categories/statement labels).
   # Returns a hash like: {'for': 30, 'while':40, if: '5'}
   def current_user_skill_mastery
     raw_points = PointsHelper.users_own_points(@point_source,
@@ -50,9 +50,9 @@ class SkillMastery
     points_by_statement
   end
 
-    # Calculates all users' skill mastery percentages (points awarded by certain
-    # categories/statement labels).
-    # Returns a hash like: {'for': 30, 'while':40, if: '5'}
+  # Calculates all users' skill mastery percentages (points awarded by certain
+  # categories/statement labels).
+  # Returns a hash like: {'for': 30, 'while':40, if: '5'}
   def all_skill_mastery
     raw_points = PointsHelper.all_course_points(@point_source, @course_id)
     points_by_name = []

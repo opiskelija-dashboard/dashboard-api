@@ -17,7 +17,7 @@ class SkillMastery
 
   # This should propably be in PointsHelper class.
   def init_point_source
-    return if @point_source.has_course_points?(@course_id)
+    #return if @point_source.has_course_points?(@course_id)
     Rails.logger.debug("PointsStore didn't have points of course #{@course_id},
     fetching...")
 

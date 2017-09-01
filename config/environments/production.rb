@@ -75,4 +75,10 @@ Rails.application.configure do
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
+
+  config.jwt_secret = secrets.secret_key_base
+  config.jwt_verify_tmc_credentials = true
+  config.points_store_class = 'PointsStore'
+  config.points_store_update_interval = 3600 # seconds
+  config.fetch_real_exercises = true
 end

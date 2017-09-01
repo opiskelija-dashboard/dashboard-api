@@ -1,3 +1,4 @@
+# Controls badge codes and badge definations.
 class BadgeAdminController < ApplicationController
   before_action :require_adminicity
 

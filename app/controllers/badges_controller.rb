@@ -1,3 +1,4 @@
+# Controls badge related routes.
 class BadgesController < ApplicationController
   # GET /user-badges/course/:course_id/earned
   def earned_in_course

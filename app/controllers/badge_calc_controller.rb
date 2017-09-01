@@ -1,5 +1,5 @@
+# Controls the badge giving process.
 class BadgeCalcController < ApplicationController
-
   def initialize
     rcpsc = Rails.configuration.points_store_class
     @point_source = rcpsc == 'MockPointsStore' ? MockPointsStore : PointsStore

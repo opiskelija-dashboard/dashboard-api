@@ -1,3 +1,4 @@
+# Controls point_source update json messages.
 class CoursePointsController < ApplicationController
   def initialize
     # Typically, point_source would be PointsStore, but for testing purposes

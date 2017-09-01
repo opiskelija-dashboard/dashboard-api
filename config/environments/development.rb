@@ -48,4 +48,6 @@ Rails.application.configure do
   config.jwt_secret = 'secret'
   config.points_store_class = 'MockPointsStore'
   config.fetch_real_exercises = false
+  config.points_store_update_interval = 30 #seconds
+  config.fetch_real_exercises = false
 end

@@ -1,6 +1,8 @@
+# Controls new-dash-session route which is needed in user authentication.
 class TokensController < ApplicationController
   skip_before_action :authenticate_request
 
+  # POST /new-dash-session
   def newtoken
     Rails.logger.info('JWT secret: ' + Rails.configuration.jwt_secret)
 

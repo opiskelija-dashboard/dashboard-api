@@ -19,7 +19,7 @@ class Token
   @@verify_tmc_creds = Rails.configuration.jwt_verify_tmc_credentials
 
   def initialize
-    @errors = Array.new
+    @errors = []
     @invalidated = true
     @tested = false
     @expires = Time.at 0
@@ -29,19 +29,25 @@ class Token
     @is_tmc_admin = false
     @jwt = ''
   end
-  
+
+  # Creates a new Token with given credentials.
+  # Returns the created token.
   def self.new_from_credentials(username, tmc_access_token)
     token = Token.new
     token.initialize_from_credentials(username, tmc_access_token)
-    return token
+    token
   end
-  
+
+  # Creates a new Token with given jwt string.
+  # Returns the created token.
   def self.new_from_jwt_string(jwt)
     token = Token.new
     token.initialize_from_jwt_string(jwt)
-    return token
+    token
   end
-  
+
+  # Itinializes token with given credentials.
+  # Returns valid jwt string.
   def initialize_from_credentials(username, tmc_access_token, verify_creds = @@verify_tmc_creds)
     @username = username
     @tmc_token = tmc_access_token
@@ -73,6 +79,7 @@ class Token
     @jwt_string = make_jwt
   end
 
+  # Initializes token from given jwt string.
   def initialize_from_jwt_string(jwt)
     @jwt_string = jwt
 
@@ -190,6 +197,7 @@ class Token
 
   private
 
+  # Creates a jwt string based on current internal state of the object.
   def make_jwt
     token_payload = {
       'tmcusr' => @username,
@@ -202,6 +210,8 @@ class Token
     jwt_string
   end
 
+  # Checks the given credentials and returns a hash with information concerning,
+  # like: { success: true, user_id: 123, is_admin: false }
   def verify_given_credentials(given_username, tmc_access_token)
     api_call_result = HttpHelpers.tmc_api_get('/users/current', tmc_access_token)
 

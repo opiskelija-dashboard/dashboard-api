@@ -10,7 +10,6 @@ class CumulativePoint
 
     @course_id = course_id
     @token = token
-    #return unless @point_source.has_course_points?(@course_id) # ??????? why?
 
     # rubocop:disable Metrics/LineLength
     Rails.logger.debug("PointsStore didn't have points of course #{@course_id}, fetching...")
@@ -41,7 +40,7 @@ class CumulativePoint
     init_data_for_everyone
   end
 
-  # Get raw_points to instance variables
+  # initializes raw_points to instance variables
   def init_raw_points
     @raw_users_points =
       PointsHelper.users_own_points(@point_source, @course_id, @token.user_id)
@@ -52,13 +51,13 @@ class CumulativePoint
     @users_points_by_day = PointsHelper.daywise_points(@raw_users_points)
   end
 
+  # initializes cumulative_points and users_count by days to instance variables
   def init_data_for_everyone
     @everyones_cumulative_points_by_day =
       CalculatedPointsStore.everyones_cumulative_points_by_day
     @cumulative_unique_users_count_by_day =
       CalculatedPointsStore.cumulative_unique_users_count_by_day
   end
-  
 
   def if_nil_return_zero(value)
     return 0 if value.nil?

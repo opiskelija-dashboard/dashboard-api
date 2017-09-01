@@ -8,8 +8,6 @@ API for getting student points from the [TMC API](https://github.com/testmycode/
 
 ## How to set it up
 
-TODO: more detail, but essentially this:
-
  * download to a server
  * `bundle install`
  * check conf settings in `config/application.rb` and `config/environments/production.rb`

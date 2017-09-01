@@ -1,6 +1,7 @@
 require 'jwt'
 
 class Token
+
   # Fields/accessor methods:
   # username
   # tmc_token
@@ -13,9 +14,9 @@ class Token
   # valid?
   # tested?
 
-  JWT_HASH_ALGO = 'HS256'.freeze
-  @jwt_secret = Rails.configuration.jwt_secret
-  @verify_tmc_creds = Rails.configuration.jwt_verify_tmc_credentials
+  JWT_HASH_ALGO = 'HS256'
+  @@jwt_secret = Rails.configuration.jwt_secret
+  @@verify_tmc_creds = Rails.configuration.jwt_verify_tmc_credentials
 
   def initialize
     @errors = []
@@ -47,17 +48,16 @@ class Token
 
   # Itinializes token with given credentials.
   # Returns valid jwt string.
-  def initialize_from_credentials(username, tmc_access_token,
-                                  verify_creds = @@verify_tmc_creds)
+  def initialize_from_credentials(username, tmc_access_token, verify_creds = @@verify_tmc_creds)
     @username = username
     @tmc_token = tmc_access_token
     @expires = Time.now + 86400
     @tested = false
     @invalidated = false
-    if verify_creds
+    if (verify_creds)
       verification_result = verify_given_credentials(@username, @tmc_token)
-      @tested = true # We tested it. Whether it's valid is a different matter.
-      if verification_result[:success]
+      @tested = true  # We tested it. Whether it's valid is a different matter.
+      if (verification_result[:success])
         @tmc_user_id = verification_result[:user_id]
         @is_tmc_admin = verification_result[:is_admin]
       else
@@ -66,11 +66,10 @@ class Token
         # checked in the first place, which is why this statement is here
         # and not, for instance, in an else-branch of if(verify_creds).
         @invalidated = true
-        if @errors.empty?
+        if (@errors.empty?)
           error = {
             'title' => 'Credential verification failed',
-            'detail' => 'Verification of given credentials was attempted, ' \
-                        'but it failed, and hence the token is invalid.'
+            'detail' => 'Verification of given credentials was attempted, but it failed, and hence the token is invalid.'
           }
           @errors.push(error);
         end
@@ -85,8 +84,7 @@ class Token
     @jwt_string = jwt
 
     Rails.logger.debug('jwt_secret = ' + @@jwt_secret)
-    decoded_token = JWT.decode(jwt, @@jwt_secret, true,
-                    {:algorithm => JWT_HASH_ALGO})
+    decoded_token = JWT.decode(jwt, @@jwt_secret, true, {:algorithm => JWT_HASH_ALGO})
     # The format of what JWT.decode returns:
     # [ {'tmcusr'=>  'username', 'tmctok'=>'ABCD', 'exp'=>1500000000},
     #   {'typ'=>'JWT', 'alg'=>'HS256'} ]
@@ -105,32 +103,51 @@ class Token
     rescue JWT::VerificationError
       error = {
         'title' => 'Token verification error',
-        'detail' => 'The token is invalid, corrupt, or maliciously created, ' \
-                    'as it does not pass signature verification.',
+        'detail' => 'The token is invalid, corrupt, or maliciously created, as it does not pass signature verification.',
       }
       @errors.push(error)
       @invalidated = true
       @tested = false
     rescue JWT::DecodeError
       error = {
-        'title' => 'Malformed token',
-        'detail' => 'The JWT token given is incorrectly formed and cannot be decoded.'
-      }
+      'title' => 'Malformed token',
+      'detail' => 'The JWT token given is incorrectly formed and cannot be decoded.',
+    }
     @errors.push(error)
     @invalidated = true
     @tested = false
   end
 
-  att_reader @username
-  att_reader @tmc_token
-  att_reader @tmc_user_idd
-  att_reader @is_tmc_admin
-  att_reader @expires
-  att_reader @jwt_string
-  att_reader @errors
+  def username
+    @username
+  end
+
+  def tmc_token
+    @tmc_token
+  end
+
+  def user_id
+    @tmc_user_id
+  end
+
+  def admin?
+    @is_tmc_admin
+  end
+
+  def expires
+    @expires
+  end
+
+  def jwt
+    @jwt_string
+  end
 
   def errors?
     !@errors.empty?
+  end
+
+  def errors
+    @errors
   end
 
   def valid?

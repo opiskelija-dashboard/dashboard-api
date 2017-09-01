@@ -1,30 +1,22 @@
 # NOTE!
 # This class uses fake definitions to create shown data.
 
-# Makes skill mastery data for current user and all the users
+# Makes skill mastery data for current user and all users
 # by statement labels ('for', 'while', 'if', ...).
 # Compares PointsStore's points and MockSkillMasteryData (in app/lib).
 class SkillMastery
   def initialize(course_id, token)
-    @course_id = course_id.to_i
+    @course_id = course_id
     @token = token
     # Typically, point_source would be PointsStore, but for testing purposes
     # you might want to use MockPointsStore.
     config = Rails.configuration.points_store_class
     @point_source = config == 'MockPointsStore' ? MockPointsStore : PointsStore
-    init_point_source
+    @point_source.course_points_update_if_necessary(@course_id, @token)
   end
 
-  # This should propably be in PointsHelper class.
-  def init_point_source
-    return if @point_source.has_course_points?(@course_id)
-    Rails.logger.debug("PointsStore didn't have points of course #{@course_id},
-    fetching...")
-
-    @point_source.update_course_points(@course_id, @token) if
-      @point_source.course_point_update_needed?(@course_id)
-  end
-
+  # Combines current_user_skill_mastery and all_skill_mastery.
+  # Returns an array of hashes like: {label: 'for', user: 30, all: 50}
   def combined_skill_mastery
     combined = []
     user = current_user_skill_mastery
@@ -36,6 +28,9 @@ class SkillMastery
     combined
   end
 
+  # Calculates current users skill mastery percentages (points awarded by certain
+  # categories/statement labels).
+  # Returns a hash like: {'for': 30, 'while':40, if: '5'}
   def current_user_skill_mastery
     raw_points = PointsHelper.users_own_points(@point_source,
                                                @course_id,
@@ -55,6 +50,9 @@ class SkillMastery
     points_by_statement
   end
 
+    # Calculates all users' skill mastery percentages (points awarded by certain
+    # categories/statement labels).
+    # Returns a hash like: {'for': 30, 'while':40, if: '5'}
   def all_skill_mastery
     raw_points = PointsHelper.all_course_points(@point_source, @course_id)
     points_by_name = []

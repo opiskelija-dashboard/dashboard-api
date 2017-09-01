@@ -20,6 +20,7 @@ class PointsStore
     !course_points.nil?
   end
 
+  # Returns all points of a given course.
   def self.course_points(course_id)
     course_id = course_id.to_s
     @@points_store[course_id]

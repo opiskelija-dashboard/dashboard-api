@@ -1,4 +1,5 @@
-# This is only fake data for SkillMastery's calculations.
+# This is only fake data for SkillMastery's calculations,
+# no calls to external APIs.
 # This will be redundant when there is an end point for these on TMC server.
 class MockSkillMasteryData
   def self.fake_data
